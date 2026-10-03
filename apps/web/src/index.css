@@ -2,8 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Black Ops One';
+  src: url('/fonts/BlackOpsOne.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Stardos Stencil';
+  src: url('/fonts/StardosStencil.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
 @layer base {
   body {
-    @apply bg-base text-text font-sans;
+    @apply bg-base text-text font-sans antialiased;
   }
+}
+
+@layer components {
+  /* Common military panel style */
+  .mil-panel {
+    @apply bg-panel border border-border rounded-md shadow-inner relative;
+  }
+  
+  /* Dashed "stitched" inner border for cards */
+  .mil-card {
+    @apply bg-card border border-border rounded-[6px] relative p-3;
+  }
+  .mil-card::after {
+    content: '';
+    @apply absolute inset-1 border border-dashed border-border/50 rounded-sm pointer-events-none;
+  }
+
+  /* Stencil stamps */
+  .stamp {
+    @apply font-stencil text-stamp border-4 border-stamp px-2 py-1 uppercase tracking-wider transform -rotate-12 opacity-80 pointer-events-none absolute inline-block;
+  }
+}
+
+/* Tactical Popup Override */
+.tactical-popup .leaflet-popup-content-wrapper {
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+}
+.tactical-popup .leaflet-popup-tip {
+  display: none;
 }

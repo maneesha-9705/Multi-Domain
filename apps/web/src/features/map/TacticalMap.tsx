@@ -15,11 +15,12 @@ interface TacticalMapProps {
 // Generate simple SVG data URIs for APP-6 like icons
 const getUnitIcon = (unit: UnitState & { perceivedStatus?: string }) => {
   let shape = 'circle';
-  let color = '#FACC15'; // UNKNOWN
+  let color = '#FFD43B'; // unknown
   
-  if (unit.affiliation === 'BLUE') { shape = 'rect'; color = '#3B9EFF'; }
-  else if (unit.affiliation === 'RED') { shape = 'polygon'; color = '#FF6B3D'; } // diamond
-  else if (unit.affiliation === 'NEUTRAL') { shape = 'rect'; color = '#9DB4C0'; } // square
+  if (unit.affiliation === 'BLUE') { shape = 'rect'; color = '#4DA3FF'; } // friendly
+  else if (unit.affiliation === 'RED') { shape = 'polygon'; color = '#FF5A36'; } // hostile diamond
+  else if (unit.affiliation === 'NEUTRAL') { shape = 'rect'; color = '#C9CFC0'; } // neutral square
+
   
   let strokeColor = 'white';
   let strokeDash = '0';
