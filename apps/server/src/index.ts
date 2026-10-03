@@ -3,7 +3,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
-import { RoleEnum } from '@echo-fog/shared';
+import { RoleEnum, Role } from '@echo-fog/shared';
 import { SimulationEngine } from './engine/SimulationEngine';
 import { scenario1 } from './data/scenario1';
 import { DegradationPipeline } from './engine/DegradationPipeline';
@@ -34,10 +34,79 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', roles: RoleEnum.options });
 });
 
+app.get('/api/exercise/:id/report', (req, res) => {
+  const session = activeExercises.get(req.params.id);
+  if (!session) return res.status(404).send('Exercise not found');
+  
+  const events = session.engine.logger.getEvents();
+  const state = session.engine.getState();
+  
+  const officerStats = Object.values(state.officers).map(o => {
+    const movements = events.filter(e => e.type === 'OFFICER_MOVED' && e.officerId === o.id).length;
+    return `<tr><td>${o.id}</td><td>${o.name}</td><td>${o.role}</td><td>${movements}</td></tr>`;
+  }).join('');
+
+  const timeline = events.map(e => {
+    const time = new Date(e.timestamp * 1000).toISOString().substr(11, 8);
+    return `<tr><td>${time}</td><td>${e.type}</td><td>${e.description}</td></tr>`;
+  }).join('');
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>ECHO-FOG AAR - ${req.params.id}</title>
+      <style>
+        body { font-family: monospace; background: #fff; color: #000; padding: 40px; max-width: 800px; margin: auto; }
+        @media print { body { padding: 0; } }
+        h1 { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; text-transform: uppercase; }
+        h2 { border-bottom: 1px dashed #000; margin-top: 30px; text-transform: uppercase; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+        th { background: #eee; }
+        .stamp { font-size: 24px; color: #d00; border: 3px solid #d00; padding: 10px; display: inline-block; transform: rotate(-5deg); position: absolute; top: 20px; right: 20px; text-transform: uppercase; }
+      </style>
+    </head>
+    <body>
+      <div class="stamp">EXERCISE ONLY<br/>FICTIONAL DATA</div>
+      <h1>ECHO-FOG AFTER-ACTION REPORT</h1>
+      
+      <table>
+        <tr><th>Operation ID</th><td>${req.params.id}</td></tr>
+        <tr><th>Operation Status</th><td>${state.status}</td></tr>
+        <tr><th>Total Duration (Sim Time)</th><td>${state.simTime} seconds</td></tr>
+        <tr><th>Total Events</th><td>${events.length}</td></tr>
+      </table>
+
+      <h2>Officer Activity</h2>
+      <table>
+        <tr><th>ID</th><th>Name</th><th>Role</th><th>Total Movements</th></tr>
+        ${officerStats}
+      </table>
+
+      <h2>Chronological Timeline</h2>
+      <table>
+        <tr><th>Time (T+)</th><th>Event Type</th><th>Description</th></tr>
+        ${timeline}
+      </table>
+      
+      <div style="margin-top: 50px; text-align: center; font-size: 12px; color: #666;">
+        End of Report. Fictional unclassified training data.
+      </div>
+    </body>
+    </html>
+  `;
+  res.send(html);
+});
+
 async function ensureExerciseInitialized(exerciseId: string) {
   if (activeExercises.has(exerciseId)) return activeExercises.get(exerciseId)!;
   
   const engine = new SimulationEngine(exerciseId, scenario1);
+  if (scenario1.initialBuildings && scenario1.initialOfficers) {
+    engine.initFictionalEntities(scenario1.initialBuildings, scenario1.initialOfficers);
+  }
+
   const pipeline = new DegradationPipeline();
   const session = { engine, pipeline, participants: new Set<Role>() };
   activeExercises.set(exerciseId, session);
@@ -47,29 +116,32 @@ async function ensureExerciseInitialized(exerciseId: string) {
     io.to(`instructor_${exerciseId}`).emit('effects:update', pipeline.getActiveEffects());
     io.to(`instructor_${exerciseId}`).emit('participants:update', Array.from(session.participants));
     
-    const rolesToUpdate: Role[] = ['TRAINEE_COMPANY_CMDR', 'TRAINEE_PLATOON_CMDR_1', 'TRAINEE_PLATOON_CMDR_2'];
-    rolesToUpdate.forEach(role => {
-      const perceived = pipeline.processStateForRole(state, role);
-      io.to(`trainee_${exerciseId}_${role}`).emit('state:perceived', perceived);
+    // Broadcast state to all trainees (in this fictional dashboard, state is unified)
+    RoleEnum.options.forEach(role => {
+      io.to(`trainee_${exerciseId}_${role}`).emit('state:perceived', state);
     });
   });
 
   engine.on('injectTriggered', (inject) => {
     io.to(`instructor_${exerciseId}`).emit('instructor:inject_alert', inject);
-    if (inject.type === 'START_JAMMING') {
-      pipeline.addEffect({
-        id: inject.id,
-        type: 'DROPOUT',
-        targetChannel: inject.payload.channel,
-        intensity: inject.payload.intensity,
-        active: true
+    
+    if (inject.type === 'COMMS_DEGRADED') {
+      const { channel, severity } = inject.payload;
+      // Affect all officers on this network
+      Object.values(engine.getState().officers).forEach(off => {
+        if (off.commsNetwork === channel) {
+          engine.setOfficerComms(off.id, channel, 'DEGRADED');
+        }
       });
+    }
+    
+    if (inject.type === 'MOVE_OFFICER') {
+      const { officerId, targetBuildingId } = inject.payload;
+      engine.moveOfficerToBuilding(officerId, targetBuildingId);
     }
   });
 
-  // Start paused by default so instructor has to press Resume
-  engine.pause(); 
-  
+  // Default to not started
   return session;
 }
 
@@ -86,7 +158,6 @@ app.post('/api/exercise/start', async (req, res) => {
 });
 
 io.on('connection', (socket) => {
-  
   socket.on('exercise:join', async (data) => {
     const { exerciseId, role } = data as { exerciseId: string, role: Role };
     const session = await ensureExerciseInitialized(exerciseId);
@@ -101,7 +172,6 @@ io.on('connection', (socket) => {
       io.to(`instructor_${exerciseId}`).emit('participants:update', Array.from(session.participants));
     }
 
-    // Handle disconnect cleanup
     socket.on('disconnect', () => {
       session.participants.delete(role);
       io.to(`instructor_${exerciseId}`).emit('participants:update', Array.from(session.participants));
@@ -113,15 +183,26 @@ io.on('connection', (socket) => {
     const session = activeExercises.get(exerciseId);
     if (!session) return;
 
+    if (action === 'START') session.engine.start();
     if (action === 'PAUSE') session.engine.pause();
     if (action === 'RESUME') session.engine.start();
+    if (action === 'END') session.engine.end();
     if (action === 'SPEED') session.engine.setSpeed(payload.multiplier);
     if (action === 'INJECT_EFFECT') session.pipeline.addEffect(payload.effect);
     if (action === 'REMOVE_EFFECT') session.pipeline.removeEffect(payload.effectId);
     if (action === 'SEND_MESSAGE') {
+       session.engine.logger.logEvent({
+         type: 'ORDER_ISSUED',
+         timestamp: session.engine.getState().simTime,
+         description: `Order from ${payload.sender}: ${payload.text}`
+       });
        io.to(`trainee_${exerciseId}_TRAINEE_COMPANY_CMDR`).emit('messages:update', payload);
-       io.to(`trainee_${exerciseId}_TRAINEE_PLATOON_CMDR_1`).emit('messages:update', payload);
-       io.to(`trainee_${exerciseId}_TRAINEE_PLATOON_CMDR_2`).emit('messages:update', payload);
+    }
+    if (action === 'MOVE_OFFICER') {
+       session.engine.moveOfficerToBuilding(payload.officerId, payload.targetBuildingId);
+    }
+    if (action === 'SET_COMMS') {
+       session.engine.setOfficerComms(payload.officerId, payload.channel, payload.status);
     }
   });
 });

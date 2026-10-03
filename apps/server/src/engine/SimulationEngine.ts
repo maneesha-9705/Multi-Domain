@@ -1,32 +1,46 @@
-import { GroundTruthState, Scenario, UnitState, Position } from '@echo-fog/shared';
+import { GroundTruthState, Scenario, UnitState, Position, Building, Officer } from '@echo-fog/shared';
 import { EventEmitter } from 'events';
+import { EventLogger } from './EventLogger';
 
 export class SimulationEngine extends EventEmitter {
   private state: GroundTruthState;
   private scenario: Scenario;
   private tickInterval: NodeJS.Timeout | null = null;
-  private readonly TICK_RATE_MS = 1000; // 1 real second = 1 tick
-  private lastTickTime: number = 0;
+  private readonly TICK_RATE_MS = 1000;
+  public logger: EventLogger;
 
   constructor(exerciseId: string, scenario: Scenario) {
     super();
     this.scenario = scenario;
+    this.logger = new EventLogger();
     
-    // Initialize ground truth state from scenario
     const units: Record<string, UnitState> = {};
-    scenario.initialUnits.forEach(u => {
-      units[u.id] = { ...u };
-    });
+    scenario.initialUnits.forEach(u => { units[u.id] = { ...u }; });
 
     this.state = {
       simTime: 0,
       exerciseId,
       scenarioId: scenario.id,
       units,
+      officers: {},
+      buildings: {},
       activeInjects: [],
       speedMultiplier: 1,
-      isPaused: true
+      isPaused: true,
+      status: 'NOT_STARTED'
     };
+  }
+
+  public initFictionalEntities(buildings: Building[], officers: Officer[]) {
+    buildings.forEach(b => this.state.buildings[b.id] = { ...b, officers: [...b.officers] });
+    officers.forEach(o => {
+      this.state.officers[o.id] = { ...o, waypoints: [...o.waypoints] };
+      if (o.currentBuildingId && this.state.buildings[o.currentBuildingId]) {
+        if (!this.state.buildings[o.currentBuildingId].officers.includes(o.id)) {
+          this.state.buildings[o.currentBuildingId].officers.push(o.id);
+        }
+      }
+    });
   }
 
   public getState(): GroundTruthState {
@@ -34,9 +48,17 @@ export class SimulationEngine extends EventEmitter {
   }
 
   public start() {
-    if (!this.state.isPaused) return;
+    if (!this.state.isPaused && this.state.status !== 'NOT_STARTED') return;
+    
+    if (this.state.status === 'NOT_STARTED') {
+      this.state.status = 'ACTIVE';
+      this.logger.logEvent({ type: 'OPERATION_STARTED', timestamp: this.state.simTime, description: 'Operation Started' });
+    } else {
+      this.state.status = 'ACTIVE';
+      this.logger.logEvent({ type: 'OPERATION_RESUMED', timestamp: this.state.simTime, description: 'Operation Resumed' });
+    }
+    
     this.state.isPaused = false;
-    this.lastTickTime = Date.now();
     this.tickInterval = setInterval(() => this.tick(), this.TICK_RATE_MS);
     this.emit('started');
   }
@@ -44,10 +66,19 @@ export class SimulationEngine extends EventEmitter {
   public pause() {
     if (this.state.isPaused) return;
     this.state.isPaused = true;
+    this.state.status = 'PAUSED';
     if (this.tickInterval) clearInterval(this.tickInterval);
+    this.logger.logEvent({ type: 'OPERATION_PAUSED', timestamp: this.state.simTime, description: 'Operation Paused' });
     this.emit('paused');
   }
   
+  public end() {
+    this.pause();
+    this.state.status = 'COMPLETED';
+    this.logger.logEvent({ type: 'OPERATION_ENDED', timestamp: this.state.simTime, description: 'Operation Ended' });
+    this.emit('ended');
+  }
+
   public setSpeed(multiplier: number) {
     this.state.speedMultiplier = multiplier;
     this.emit('speedChanged', multiplier);
@@ -56,16 +87,13 @@ export class SimulationEngine extends EventEmitter {
   private tick() {
     if (this.state.isPaused) return;
 
-    const now = Date.now();
-    // In a real implementation we would calculate exact delta, 
-    // but for discrete ticks we'll just add the multiplier
     const deltaSimTime = 1 * this.state.speedMultiplier;
     this.state.simTime += deltaSimTime;
 
     this.updateUnitPositions(deltaSimTime);
+    this.updateOfficerPositions(deltaSimTime);
     this.checkInjects();
 
-    // Emit tick event so socket manager can distribute state
     this.emit('tick', this.state);
   }
 
@@ -74,8 +102,6 @@ export class SimulationEngine extends EventEmitter {
       if (unit.waypoints.length > 0 && unit.speed > 0) {
         const target = unit.waypoints[0];
         const dist = this.calculateDistance(unit.position, target);
-        
-        // 1 unit = 1 meter
         const moveDist = unit.speed * deltaSimTime;
         
         if (dist <= moveDist) {
@@ -85,10 +111,97 @@ export class SimulationEngine extends EventEmitter {
           const ratio = moveDist / dist;
           unit.position.lat += (target.lat - unit.position.lat) * ratio;
           unit.position.lng += (target.lng - unit.position.lng) * ratio;
-          
           unit.heading = Math.atan2(target.lng - unit.position.lng, target.lat - unit.position.lat) * 180 / Math.PI;
         }
       }
+    });
+  }
+
+  private updateOfficerPositions(deltaSimTime: number) {
+    Object.values(this.state.officers).forEach(officer => {
+      if (officer.waypoints.length > 0 && officer.status === 'IN_TRANSIT') {
+        const target = officer.waypoints[0];
+        const dist = this.calculateDistance(officer.position, target);
+        const speed = 10; // Fictional map speed
+        const moveDist = speed * deltaSimTime;
+        
+        if (dist <= moveDist) {
+          officer.position = { ...target };
+          officer.waypoints.shift();
+
+          if (officer.waypoints.length === 0) {
+            officer.status = 'ACTIVE';
+            
+            if (officer.targetBuildingId && this.state.buildings[officer.targetBuildingId]) {
+              const b = this.state.buildings[officer.targetBuildingId];
+              if (!b.officers.includes(officer.id)) {
+                b.officers.push(officer.id);
+              }
+              officer.currentBuildingId = b.id;
+              
+              this.logger.logEvent({
+                type: 'OFFICER_ENTERED_BUILDING',
+                timestamp: this.state.simTime,
+                officerId: officer.id,
+                buildingId: b.id,
+                description: `${officer.name} entered ${b.name}`
+              });
+            }
+            officer.targetBuildingId = null;
+          }
+        } else {
+          const ratio = moveDist / dist;
+          officer.position.lat += (target.lat - officer.position.lat) * ratio;
+          officer.position.lng += (target.lng - officer.position.lng) * ratio;
+        }
+      }
+    });
+  }
+
+  public moveOfficerToBuilding(officerId: string, targetBuildingId: string) {
+    const officer = this.state.officers[officerId];
+    const targetBuilding = this.state.buildings[targetBuildingId];
+    if (!officer || !targetBuilding) return;
+
+    if (officer.currentBuildingId) {
+      const currentBuilding = this.state.buildings[officer.currentBuildingId];
+      if (currentBuilding) {
+        currentBuilding.officers = currentBuilding.officers.filter(id => id !== officerId);
+      }
+      this.logger.logEvent({
+        type: 'OFFICER_LEFT_BUILDING',
+        timestamp: this.state.simTime,
+        officerId: officer.id,
+        buildingId: officer.currentBuildingId,
+        description: `${officer.name} departed ${currentBuilding?.name || 'building'}`
+      });
+    }
+
+    this.logger.logEvent({
+      type: 'OFFICER_MOVED',
+      timestamp: this.state.simTime,
+      officerId: officer.id,
+      description: `${officer.name} started moving to ${targetBuilding.name}`
+    });
+
+    officer.currentBuildingId = null;
+    officer.targetBuildingId = targetBuildingId;
+    officer.status = 'IN_TRANSIT';
+    officer.waypoints = [{ ...targetBuilding.position }];
+  }
+  
+  public setOfficerComms(officerId: string, channel: string, status: 'AVAILABLE'|'DEGRADED'|'UNAVAILABLE') {
+    const officer = this.state.officers[officerId];
+    if (!officer) return;
+    officer.commsNetwork = channel;
+    officer.commsStatus = status;
+    this.logger.logEvent({
+      type: status === 'AVAILABLE' ? 'COMMUNICATION_RESTORED' : (status === 'DEGRADED' ? 'COMMUNICATION_DEGRADED' : 'COMMUNICATION_LOST'),
+      timestamp: this.state.simTime,
+      officerId,
+      channel,
+      status,
+      description: `${officer.name} ${channel} communications ${status}`
     });
   }
 

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { io, Socket } from 'socket.io-client';
-import { Role, GroundTruthState, UnitState } from '@echo-fog/shared';
+import { Role, GroundTruthState, UnitState, Building, Officer } from '@echo-fog/shared';
 
 interface AppState {
   socket: Socket | null;
@@ -8,20 +8,18 @@ interface AppState {
   role: Role | null;
   exerciseId: string | null;
   
-  // State for trainees (perceived)
   perceivedUnits: Record<string, UnitState & { perceivedStatus?: string }>;
   commsQuality: Record<string, number>;
   messages: any[];
+  buildings: Record<string, Building>;
+  officers: Record<string, Officer>;
   
-  // State for instructor (truth)
   truthState: GroundTruthState | null;
   activeEffects: any[];
   participants: Role[];
 
   connect: (exerciseId: string, role: Role) => void;
   disconnect: () => void;
-  
-  // Actions
   startExercise: () => Promise<void>;
 }
 
@@ -33,6 +31,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   perceivedUnits: {},
   commsQuality: {},
   messages: [],
+  buildings: {},
+  officers: {},
   truthState: null,
   activeEffects: [],
   participants: [],
@@ -49,15 +49,16 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ connected: false });
     });
 
-    socket.on('state:perceived', (data) => {
+    socket.on('state:perceived', (state: GroundTruthState) => {
       set({ 
-        perceivedUnits: data.perceivedUnits,
-        commsQuality: data.commsQuality
+        buildings: state.buildings,
+        officers: state.officers,
+        truthState: state // unified state for now
       });
     });
 
-    socket.on('state:truth', (data) => {
-      set({ truthState: data });
+    socket.on('state:truth', (state: GroundTruthState) => {
+      set({ truthState: state, buildings: state.buildings, officers: state.officers });
     });
 
     socket.on('effects:update', (effects) => {

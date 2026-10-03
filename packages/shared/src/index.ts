@@ -70,6 +70,8 @@ export const ScenarioSchema = z.object({
     zoom: z.number()
   }),
   initialUnits: z.array(UnitStateSchema),
+  initialBuildings: z.array(z.any()).optional(), // Type Building
+  initialOfficers: z.array(z.any()).optional(), // Type Officer
   injects: z.array(InjectSchema),
 });
 export type Scenario = z.infer<typeof ScenarioSchema>;
@@ -78,9 +80,60 @@ export const GroundTruthStateSchema = z.object({
   simTime: z.number(),
   exerciseId: z.string(),
   scenarioId: z.string(),
-  units: z.record(z.string(), UnitStateSchema),
+  units: z.record(z.string(), UnitStateSchema), // Keeping units for compatibility if needed
+  officers: z.record(z.string(), z.any()), // Will type properly below
+  buildings: z.record(z.string(), z.any()),
   activeInjects: z.array(z.string()),
   speedMultiplier: z.number(),
   isPaused: z.boolean(),
+  status: z.enum(['NOT_STARTED', 'ACTIVE', 'PAUSED', 'COMPLETED']).default('NOT_STARTED'),
 });
 export type GroundTruthState = z.infer<typeof GroundTruthStateSchema>;
+
+export const BuildingSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.string(),
+  position: PositionSchema,
+  status: z.enum(['ACTIVE', 'INACTIVE', 'COMPROMISED']),
+  officers: z.array(z.string())
+});
+export type Building = z.infer<typeof BuildingSchema>;
+
+export const OfficerSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  role: z.string(),
+  currentBuildingId: z.string().nullable(),
+  position: PositionSchema,
+  status: z.enum(['ACTIVE', 'IN_TRANSIT', 'OFFLINE']),
+  commsNetwork: z.string(),
+  commsStatus: z.enum(['AVAILABLE', 'DEGRADED', 'UNAVAILABLE']),
+  lastUpdateTime: z.number(),
+  waypoints: z.array(PositionSchema),
+  targetBuildingId: z.string().nullable()
+});
+export type Officer = z.infer<typeof OfficerSchema>;
+
+export const SimEventSchema = z.object({
+  eventId: z.string(),
+  type: z.string(),
+  timestamp: z.number(),
+  officerId: z.string().optional(),
+  buildingId: z.string().optional(),
+  channel: z.string().optional(),
+  description: z.string(),
+  status: z.string().optional(),
+  data: z.any().optional()
+});
+export type SimEvent = z.infer<typeof SimEventSchema>;
+
+export const OrderSchema = z.object({
+  orderId: z.string(),
+  issuer: z.string(),
+  recipient: z.string(),
+  content: z.string(),
+  timestamp: z.number(),
+  status: z.enum(['ISSUED', 'ACKNOWLEDGED', 'COMPLETED', 'FAILED'])
+});
+export type Order = z.infer<typeof OrderSchema>;
