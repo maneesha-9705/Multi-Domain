@@ -116,7 +116,7 @@ export const MainView: React.FC = () => {
                 <div className="mil-card">
                   <p className="text-[10px] text-muted uppercase font-bold mb-2">Push Orders</p>
                   <button onClick={() => useAppStore.getState().socket?.emit('instructor:control', { exerciseId, action: 'SEND_MESSAGE', payload: { id: Date.now().toString(), text: 'Fall back to phase line Alpha.', sender: 'HQ' } })} className="w-full bg-base hover:bg-border border border-border text-xs py-2 rounded font-mono text-sand">
-                    > FALL BACK TO ALPHA
+                    &gt; FALL BACK TO ALPHA
                   </button>
                 </div>
 
