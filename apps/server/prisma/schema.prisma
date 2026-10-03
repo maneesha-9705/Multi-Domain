@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String // hashed
+  role      String // INSTRUCTOR or TRAINEE
+  createdAt DateTime @default(now())
+}
+
+model Exercise {
+  id          String   @id @default(uuid())
+  scenarioId  String
+  status      String   @default("PENDING") // PENDING, RUNNING, PAUSED, COMPLETED
+  createdAt   DateTime @default(now())
+  
+  participants Participant[]
+  decisions    Decision[]
+}
+
+model Participant {
+  id         String   @id @default(uuid())
+  userId     String
+  exerciseId String
+  role       String // TRAINEE_COMPANY_CMDR, etc.
+  
+  exercise   Exercise @relation(fields: [exerciseId], references: [id])
+}
+
+model Decision {
+  id              String   @id @default(uuid())
+  exerciseId      String
+  participantRole String
+  injectId        String
+  simTime         Int
+  choice          String
+  timeToDecideMs  Int
+  rationale       String
+  confidence      Int      // 1-5
+  infoRelied      String   // JSON array of InfoMessage IDs
+  
+  exercise        Exercise @relation(fields: [exerciseId], references: [id])
+}

@@ -1,0 +1,70 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 2000" width="2000" height="2000">
+  <defs>
+    <style>
+      .bg { fill: #0B1118; }
+      .contour-light { stroke: #1A2634; stroke-width: 1; fill: none; }
+      .contour-bold { stroke: #2A3A4D; stroke-width: 2; fill: none; }
+      .water { stroke: #0f4b5e; stroke-width: 8; fill: none; }
+      .lake { fill: #0f4b5e; }
+      .forest { fill: #0a1f18; opacity: 0.6; }
+      .road { stroke: #3a3a3a; stroke-width: 4; fill: none; stroke-dasharray: 10 5; }
+      .rail { stroke: #4a4a4a; stroke-width: 2; fill: none; }
+      .rail-tie { stroke: #4a4a4a; stroke-width: 6; stroke-dasharray: 2 10; fill: none; }
+      .village { fill: #4a4a4a; }
+      .label { fill: #8FA3B8; font-family: 'JetBrains Mono', monospace; font-size: 24px; font-variant: small-caps; }
+    </style>
+  </defs>
+
+  <!-- Base -->
+  <rect class="bg" width="2000" height="2000" />
+
+  <!-- Forests -->
+  <path class="forest" d="M200,200 Q400,100 500,300 T600,600 Q400,700 200,600 Z" />
+  <path class="forest" d="M1500,1200 Q1700,1000 1900,1300 T1800,1700 Q1500,1800 1400,1500 Z" />
+  <path class="forest" d="M100,1500 Q300,1400 400,1600 T300,1900 Q100,1800 100,1500 Z" />
+
+  <!-- Contours -->
+  <!-- Low elevation -->
+  <path class="contour-light" d="M0,800 Q500,900 1000,700 T2000,500" />
+  <path class="contour-light" d="M0,850 Q500,950 1000,750 T2000,550" />
+  <path class="contour-light" d="M0,900 Q500,1000 1000,800 T2000,600" />
+  <!-- Bold 100m -->
+  <path class="contour-bold" d="M0,950 Q500,1050 1000,850 T2000,650" />
+  
+  <!-- High elevation (Ridge) -->
+  <path class="contour-light" d="M1000,1000 Q1200,1200 1500,1000 T2000,1100" />
+  <path class="contour-bold" d="M950,950 Q1200,1150 1500,950 T2000,1050" />
+  <path class="contour-bold" d="M900,900 Q1200,1100 1500,900 T2000,1000" />
+
+  <!-- River and Lake -->
+  <path class="water" d="M0,300 Q400,400 800,200 T1200,400 T1600,300" />
+  <circle class="lake" cx="1600" cy="300" r="150" />
+
+  <!-- Roads & Rails -->
+  <path class="road" d="M200,0 L400,800 L800,1200 L1200,2000" />
+  <path class="road" d="M0,1200 L600,1100 L1200,1200 L2000,1400" />
+  
+  <path class="rail" d="M0,1800 L1000,1600 L2000,1800" />
+  <path class="rail-tie" d="M0,1800 L1000,1600 L2000,1800" />
+
+  <!-- Villages -->
+  <rect class="village" x="350" y="750" width="40" height="40" />
+  <rect class="village" x="380" y="720" width="30" height="30" />
+  
+  <rect class="village" x="1150" y="1150" width="50" height="30" />
+  <rect class="village" x="1100" y="1180" width="40" height="40" />
+
+  <rect class="village" x="1500" y="200" width="60" height="40" />
+
+  <!-- Bridge (Choke point) -->
+  <rect class="bg" x="380" y="380" width="40" height="40" fill="#E6EDF3" />
+  <text x="430" y="400" class="label">Bridge Alpha (Choke)</text>
+
+  <!-- Labels -->
+  <text x="1200" y="1050" class="label">Silent Ridge</text>
+  <text x="800" y="1500" class="label">Iron Pass</text>
+  <text x="1550" y="180" class="label">Glass Harbour</text>
+  <text x="320" y="700" class="label">Village Rudra</text>
+
+</svg>

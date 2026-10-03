@@ -1,0 +1,17 @@
+{
+  "name": "echo-fog",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w @echo-fog/server\" \"npm run dev -w @echo-fog/web\"",
+    "build": "npm run build --workspaces --if-present",
+    "seed": "npm run seed -w @echo-fog/server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
