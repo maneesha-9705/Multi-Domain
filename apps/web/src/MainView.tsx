@@ -63,7 +63,7 @@ export const MainView: React.FC = () => {
       
       const lastJoin = myEvents.slice().reverse().find(e => e.type === 'OFFICER_JOINED');
       if (!lastJoin) {
-         off.status = 'INACTIVE';
+         off.status = 'OFFLINE';
          return; // not yet joined
       }
       off.status = 'ACTIVE';
@@ -79,10 +79,7 @@ export const MainView: React.FC = () => {
       const lastMoveEnd = myEvents.slice().reverse().find(e => e.type === 'OFFICER_ENTERED_BUILDING');
       
       if (lastMoveStart && (!lastMoveEnd || lastMoveEnd.timestamp < lastMoveStart.timestamp)) {
-         // Currently in transit during this replay frame
          off.currentBuildingId = null;
-         // In a real robust system we'd interpolate between start building and target building coordinates.
-         // Since we don't store target in the event easily right now, we'll just mark them IN_TRANSIT.
       } else if (lastMoveEnd) {
          off.currentBuildingId = lastMoveEnd.buildingId || null;
          if (off.currentBuildingId && buildings[off.currentBuildingId]) {
@@ -100,7 +97,7 @@ export const MainView: React.FC = () => {
   const commsOverview = useMemo(() => {
     const nets: Record<string, 'AVAILABLE' | 'DEGRADED' | 'UNAVAILABLE'> = { VHF: 'AVAILABLE', UHF: 'AVAILABLE', SATCOM: 'AVAILABLE', DATALINK: 'AVAILABLE' };
     Object.values(activeOfficers).forEach(o => {
-      if (o.status === 'INACTIVE') return;
+      if (o.status === 'OFFLINE') return;
       if (o.commsStatus === 'DEGRADED' && nets[o.commsNetwork] === 'AVAILABLE') nets[o.commsNetwork] = 'DEGRADED';
       if (o.commsStatus === 'UNAVAILABLE') nets[o.commsNetwork] = 'UNAVAILABLE';
     });
@@ -208,11 +205,11 @@ export const MainView: React.FC = () => {
                     <button onClick={() => useAppStore.getState().socket?.emit('instructor:control', { exerciseId, action: 'INJECT_EFFECT', payload: { effect: { id: Date.now().toString(), type: 'COMMS_DEGRADED', payload: { channel: 'VHF', severity: 'HIGH' }, active: true } } })} className="w-full bg-base hover:bg-border text-xs py-2 rounded border border-border text-left px-2 font-mono text-stamp">
                       + DEGRADE VHF
                     </button>
-                    <button onClick={() => useAppStore.getState().socket?.emit('instructor:control', { exerciseId, action: 'MOVE_OFFICER', payload: { officerId: 'OFF-003', targetBuildingId: 'BLD-005' } })} className="w-full bg-base hover:bg-border text-xs py-2 rounded border border-border text-left px-2 font-mono text-accent">
-                      + MOVE OFF-003 TO FACILITY A
+                    <button onClick={() => useAppStore.getState().socket?.emit('instructor:control', { exerciseId, action: 'MOVE_OFFICER', payload: { officerId: 'OFF-TRAINEE_PLATOON_CMDR_1', targetBuildingId: 'SP-001' } })} className="w-full bg-base hover:bg-border text-xs py-2 rounded border border-border text-left px-2 font-mono text-accent">
+                      + MOVE CMDR_1 TO CHECKPOINT 1
                     </button>
-                    <button onClick={() => useAppStore.getState().socket?.emit('instructor:control', { exerciseId, action: 'MOVE_OFFICER', payload: { officerId: 'OFF-005', targetBuildingId: 'BLD-001' } })} className="w-full bg-base hover:bg-border text-xs py-2 rounded border border-border text-left px-2 font-mono text-accent">
-                      + MOVE OFF-005 TO HQ
+                    <button onClick={() => useAppStore.getState().socket?.emit('instructor:control', { exerciseId, action: 'MOVE_OFFICER', payload: { officerId: 'OFF-TRAINEE_PLATOON_CMDR_2', targetBuildingId: 'BLD-002' } })} className="w-full bg-base hover:bg-border text-xs py-2 rounded border border-border text-left px-2 font-mono text-accent">
+                      + MOVE CMDR_2 TO COMMAND BLD
                     </button>
                   </div>
                 </div>

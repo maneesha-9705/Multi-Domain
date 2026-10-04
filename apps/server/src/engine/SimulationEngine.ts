@@ -100,6 +100,12 @@ export class SimulationEngine extends EventEmitter {
     if (this.state.status === 'NOT_STARTED') {
       this.state.status = 'ACTIVE';
       this.logger.logEvent({ type: 'OPERATION_STARTED', timestamp: this.state.simTime, description: 'Operation Started' });
+      
+      // Auto-spawn mock officers for the instructor if none have joined yet
+      if (Object.keys(this.state.officers).length === 0) {
+        this.spawnOfficer('TRAINEE_PLATOON_CMDR_1');
+        this.spawnOfficer('TRAINEE_PLATOON_CMDR_2');
+      }
     } else {
       this.state.status = 'ACTIVE';
       this.logger.logEvent({ type: 'OPERATION_RESUMED', timestamp: this.state.simTime, description: 'Operation Resumed' });
