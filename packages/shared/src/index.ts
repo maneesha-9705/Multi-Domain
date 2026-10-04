@@ -137,3 +137,21 @@ export const OrderSchema = z.object({
   status: z.enum(['ISSUED', 'ACKNOWLEDGED', 'COMPLETED', 'FAILED'])
 });
 export type Order = z.infer<typeof OrderSchema>;
+
+export const TraineeDecisionSchema = z.object({
+  id: z.string(),
+  exerciseId: z.string(),
+  scenarioId: z.string(),
+  role: z.string(),
+  choice: z.enum(['HOLD', 'REGROUP', 'PROCEED', 'REQUEST_RECON']),
+  rationale: z.string(),
+  confidence: z.enum(['LOW', 'MEDIUM', 'HIGH']),
+  simTime: z.number(),
+  timeToDecideMs: z.number(),
+  commsStateAtDecision: z.string(),
+  availableChannels: z.array(z.string()),
+  infoAvailableSnapshot: z.record(z.string(), z.any()),
+  timestamp: z.number()
+});
+export type TraineeDecision = z.infer<typeof TraineeDecisionSchema>;
+

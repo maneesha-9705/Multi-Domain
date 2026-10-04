@@ -1,70 +1,266 @@
-
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 2000" width="2000" height="2000">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20000 20000" width="20000" height="20000">
   <defs>
     <style>
-      .bg { fill: #0B1118; }
-      .contour-light { stroke: #1A2634; stroke-width: 1; fill: none; }
-      .contour-bold { stroke: #2A3A4D; stroke-width: 2; fill: none; }
-      .water { stroke: #0f4b5e; stroke-width: 8; fill: none; }
-      .lake { fill: #0f4b5e; }
-      .forest { fill: #0a1f18; opacity: 0.6; }
-      .road { stroke: #3a3a3a; stroke-width: 4; fill: none; stroke-dasharray: 10 5; }
-      .rail { stroke: #4a4a4a; stroke-width: 2; fill: none; }
-      .rail-tie { stroke: #4a4a4a; stroke-width: 6; stroke-dasharray: 2 10; fill: none; }
-      .village { fill: #4a4a4a; }
-      .label { fill: #8FA3B8; font-family: 'JetBrains Mono', monospace; font-size: 24px; font-variant: small-caps; }
+      .bg { fill: #000000; }
+      .river { stroke: #2F4F4F; stroke-width: 120; fill: none; stroke-linecap: round; }
+      .road-saddle { stroke: #8B4513; stroke-width: 140; fill: none; stroke-linecap: round; }
+      .route-casing { stroke: #000000; stroke-width: 160; fill: none; stroke-linecap: round; }
+      .route-main { stroke: #FFD700; stroke-width: 100; stroke-dasharray: 180 90; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+      .route-sec { stroke: #8B4513; stroke-width: 70; stroke-dasharray: 120 70; fill: none; stroke-linecap: round; }
+      
+      .sector-poly { fill: #4B5320; fill-opacity: 0.35; stroke: #FFD700; stroke-width: 100; stroke-dasharray: 240 160; stroke-linejoin: round; }
+      
+      .panel-bg { fill: #000000; stroke: #4B5320; stroke-width: 16; }
+      .panel-ref { fill: #000000; stroke: #8B4513; stroke-width: 16; }
+      .panel-accent { stroke: #FFD700; stroke-width: 10; fill: none; }
+      
+      .title-large { fill: #FFD700; font-family: 'Black Ops One', 'JetBrains Mono', monospace; font-size: 480px; font-weight: 900; letter-spacing: 16px; }
+      .title-sub { fill: #B0C4DE; font-family: 'JetBrains Mono', monospace; font-size: 320px; font-weight: 800; letter-spacing: 10px; }
+      .text-body { fill: #A9A9A9; font-family: 'JetBrains Mono', monospace; font-size: 240px; font-weight: 600; }
+      .text-steel { fill: #B0C4DE; font-family: 'JetBrains Mono', monospace; font-size: 300px; font-weight: 800; }
+      .text-gold { fill: #FFD700; font-family: 'JetBrains Mono', monospace; font-size: 250px; font-weight: 800; }
     </style>
+    <pattern id="military-grid" width="1000" height="1000" patternUnits="userSpaceOnUse">
+      <path d="M 1000 0 L 0 0 0 1000" fill="none" stroke="#3C3C3D" stroke-width="8" opacity="0.3"/>
+    </pattern>
   </defs>
 
-  <!-- Base -->
-  <rect class="bg" width="2000" height="2000" />
+  <!-- #000000 Base Pure Black Background -->
+  <rect class="bg" width="20000" height="20000" />
+  <rect width="20000" height="20000" fill="url(#military-grid)" />
 
-  <!-- Forests -->
-  <path class="forest" d="M200,200 Q400,100 500,300 T600,600 Q400,700 200,600 Z" />
-  <path class="forest" d="M1500,1200 Q1700,1000 1900,1300 T1800,1700 Q1500,1800 1400,1500 Z" />
-  <path class="forest" d="M100,1500 Q300,1400 400,1600 T300,1900 Q100,1800 100,1500 Z" />
+  <!-- Mountain Massifs & Topographic Relief (#4B5320 / #6B8E23 / #2F4F4F) -->
+  <g id="mountain-massifs">
+    <path d="M 18084,4500 L 16399,5726 L 13157,6163 L 11932,7331 L 9000,7668 L 5598,7785 L 5169,6032 L 1948,5668 L 568,4500 L 1637,3280 L 4330,2632 L 6566,2149 L 9000,661 L 11713,1880 L 13996,2502 L 14902,3522 L 18084,4500 Z" fill="#2F4F4F" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 17019,4500 L 14938,5484 L 12588,5935 L 11787,7192 L 9000,7300 L 6246,7160 L 5698,5821 L 2293,5611 L 1551,4500 L 3094,3521 L 4964,2885 L 6648,2229 L 9000,1113 L 11152,2422 L 13322,2771 L 14701,3556 L 17019,4500 Z" fill="#3B4928" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 15688,4500 L 13660,5272 L 12206,5783 L 11567,6979 L 9000,6826 L 6817,6608 L 6038,5685 L 2821,5524 L 2801,4500 L 4367,3732 L 5409,3064 L 6806,2381 L 9000,1671 L 10666,2891 L 12835,2966 L 14316,3619 L 15688,4500 Z" fill="#445124" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 14252,4500 L 12637,5103 L 11899,5660 L 11241,6664 L 9000,6310 L 7283,6158 L 6304,5578 L 3605,5394 L 4156,4500 L 5385,3901 L 5780,3212 L 7070,2636 L 9000,2271 L 10287,3257 L 12424,3131 L 13676,3725 L 14252,4500 Z" fill="#4B5320" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 12874,4500 L 11851,4972 L 11551,5521 L 10817,6255 L 9000,5816 L 7651,5803 L 6612,5455 L 4625,5225 L 5452,4500 L 6167,4031 L 6192,3377 L 7431,2985 L 9000,2848 L 10005,3529 L 11971,3312 L 12800,3870 L 12874,4500 Z" fill="#536221" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 11667,4500 L 11209,4866 L 11082,5333 L 10334,5788 L 9000,5392 L 7959,5505 L 7040,5284 L 5789,5032 L 6578,4500 L 6805,4136 L 6725,3590 L 7853,3392 L 9000,3356 L 9783,3744 L 11397,3541 L 11779,4039 L 11667,4500 Z" fill="#5B7122" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 10662,4500 L 10584,4762 L 10470,5088 L 9843,5314 L 9000,5048 L 8260,5215 L 7612,5055 L 6971,4836 L 7501,4500 L 7425,4239 L 7402,3861 L 8281,3806 L 9000,3784 L 9568,3951 L 10679,3828 L 10741,4211 L 10662,4500 Z" fill="#638022" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 9810,4500 L 9866,4644 L 9750,4800 L 9391,4877 L 9000,4766 L 8599,4887 L 8291,4784 L 8060,4656 L 8272,4500 L 8138,4357 L 8186,4174 L 8672,4183 L 9000,4151 L 9315,4196 L 9855,4158 L 9796,4368 L 9810,4500 Z" fill="#6B8E23" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
 
-  <!-- Contours -->
-  <!-- Low elevation -->
-  <path class="contour-light" d="M0,800 Q500,900 1000,700 T2000,500" />
-  <path class="contour-light" d="M0,850 Q500,950 1000,750 T2000,550" />
-  <path class="contour-light" d="M0,900 Q500,1000 1000,800 T2000,600" />
-  <!-- Bold 100m -->
-  <path class="contour-bold" d="M0,950 Q500,1050 1000,850 T2000,650" />
-  
-  <!-- High elevation (Ridge) -->
-  <path class="contour-light" d="M1000,1000 Q1200,1200 1500,1000 T2000,1100" />
-  <path class="contour-bold" d="M950,950 Q1200,1150 1500,950 T2000,1050" />
-  <path class="contour-bold" d="M900,900 Q1200,1100 1500,900 T2000,1000" />
+    <path d="M 19046,4000 L 18592,4930 L 17188,5367 L 16909,6881 L 15000,6590 L 13645,6045 L 12428,5608 L 10998,5036 L 10185,4000 L 12267,3293 L 12140,2213 L 13406,1595 L 15000,1051 L 16265,2092 L 17475,2453 L 19455,2847 L 19046,4000 Z" fill="#2F4F4F" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 18186,4000 L 17972,4769 L 17075,5297 L 16681,6537 L 15000,6043 L 13883,5685 L 12596,5503 L 11462,4916 L 11155,4000 L 12765,3421 L 12349,2343 L 13589,1872 L 15000,1649 L 16039,2432 L 17321,2549 L 18926,2984 L 18186,4000 Z" fill="#3B4928" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 17402,4000 L 17502,4648 L 16908,5192 L 16390,6098 L 15000,5545 L 14059,5420 L 12817,5364 L 12077,4757 L 12049,4000 L 13112,3511 L 12612,2508 L 13835,2242 L 15000,2199 L 15877,2677 L 17113,2679 L 18247,3160 L 17402,4000 Z" fill="#445124" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 16755,4000 L 17109,4546 L 16644,5028 L 16068,5611 L 15000,5131 L 14202,5204 L 13136,5165 L 12769,4577 L 12806,4000 L 13382,3581 L 12972,2732 L 14113,2661 L 15000,2663 L 15746,2874 L 16809,2870 L 17490,3355 L 16755,4000 Z" fill="#4B5320" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 16248,4000 L 16708,4442 L 16282,4801 L 15749,5130 L 15000,4806 L 14349,4982 L 13554,4904 L 13453,4400 L 13423,4000 L 13660,3653 L 13431,3019 L 14387,3075 L 15000,3040 L 15612,3077 L 16405,3122 L 16741,3549 L 16248,4000 Z" fill="#536221" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 15836,4000 L 16233,4319 L 15852,4532 L 15460,4694 L 15000,4540 L 14527,4713 L 14038,4601 L 14063,4243 L 13945,4000 L 14013,3744 L 13956,3348 L 14630,3442 L 15000,3358 L 15447,3326 L 15934,3416 L 16067,3724 L 15836,4000 Z" fill="#5B7122" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 15444,4000 L 15657,4170 L 15407,4255 L 15213,4322 L 15000,4286 L 14747,4382 L 14538,4289 L 14572,4111 L 14446,4000 L 14466,3862 L 14497,3685 L 14832,3746 L 15000,3663 L 15240,3638 L 15448,3720 L 15493,3872 L 15444,4000 Z" fill="#638022" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
 
-  <!-- River and Lake -->
-  <path class="water" d="M0,300 Q400,400 800,200 T1200,400 T1600,300" />
-  <circle class="lake" cx="1600" cy="300" r="150" />
+    <path d="M 6680,4000 L 6890,4878 L 6597,5936 L 5200,6566 L 3500,6408 L 2347,5740 L 23,6173 L -294,4982 L -439,4000 L 551,3237 L 317,2011 L 1703,1289 L 3500,1959 L 4972,1779 L 6303,2248 L 8150,2796 L 6680,4000 Z" fill="#2F4F4F" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 6038,4000 L 6628,4810 L 6287,5742 L 4865,6060 L 3500,5947 L 2419,5631 L 387,5945 L 471,4784 L 311,4000 L 750,3288 L 639,2212 L 2052,1815 L 3500,2368 L 4854,1957 L 6036,2415 L 7263,3026 L 6038,4000 Z" fill="#3B4928" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 5574,4000 L 6339,4735 L 5852,5470 L 4542,5572 L 3500,5597 L 2503,5504 L 877,5639 L 1208,4593 L 884,4000 L 976,3347 L 1087,2492 L 2389,2324 L 3500,2666 L 4724,2152 L 5642,2661 L 6404,3248 L 5574,4000 Z" fill="#445124" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 5226,4000 L 5948,4634 L 5334,5146 L 4260,5147 L 3500,5319 L 2629,5314 L 1449,5282 L 1844,4429 L 1340,4000 L 1303,3431 L 1617,2823 L 2685,2770 L 3500,2890 L 4553,2411 L 5166,2959 L 5646,3445 L 5226,4000 Z" fill="#4B5320" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 4908,4000 L 5431,4500 L 4795,4809 L 4031,4801 L 3500,5060 L 2808,5045 L 2042,4911 L 2352,4297 L 1766,4000 L 1758,3549 L 2168,3168 L 2928,3137 L 3500,3097 L 4329,2749 L 4669,3269 L 5015,3608 L 4908,4000 Z" fill="#536221" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 4538,4000 L 4809,4339 L 4293,4496 L 3845,4520 L 3500,4769 L 3029,4710 L 2598,4564 L 2756,4192 L 2245,4000 L 2317,3694 L 2682,3489 L 3128,3438 L 3500,3336 L 4062,3153 L 4209,3557 L 4488,3744 L 4538,4000 Z" fill="#5B7122" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 4068,4000 L 4142,4166 L 3862,4226 L 3678,4268 L 3500,4415 L 3270,4347 L 3084,4260 L 3116,4099 L 2824,4000 L 2921,3850 L 3126,3766 L 3309,3711 L 3500,3637 L 3776,3584 L 3820,3800 L 4006,3869 L 4068,4000 Z" fill="#638022" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
 
-  <!-- Roads & Rails -->
-  <path class="road" d="M200,0 L400,800 L800,1200 L1200,2000" />
-  <path class="road" d="M0,1200 L600,1100 L1200,1200 L2000,1400" />
-  
-  <path class="rail" d="M0,1800 L1000,1600 L2000,1800" />
-  <path class="rail-tie" d="M0,1800 L1000,1600 L2000,1800" />
+    <path d="M 4959,10500 L 5131,12265 L 5065,14629 L 3994,15300 L 3000,15255 L 2254,14100 L 763,14974 L 685,12418 L 696,10500 L 990,8835 L 1008,6517 L 1883,5106 L 3000,6727 L 3970,5818 L 4819,6862 L 5783,8195 L 4959,10500 Z" fill="#2F4F4F" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 4612,10500 L 4992,12150 L 4818,14135 L 3784,14285 L 3000,14440 L 2293,13916 L 1035,14431 L 1181,12007 L 1093,10500 L 1112,8936 L 1245,6990 L 2111,6206 L 3000,7402 L 3900,6157 L 4607,7286 L 5220,8661 L 4612,10500 Z" fill="#3B4928" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 4365,10500 L 4805,11995 L 4499,13498 L 3593,13363 L 3000,13827 L 2350,13638 L 1378,13745 L 1630,11635 L 1389,10500 L 1281,9076 L 1553,7606 L 2319,7213 L 3000,7874 L 3810,6590 L 4324,7852 L 4705,9088 L 4365,10500 Z" fill="#445124" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 4168,10500 L 4539,11775 L 4146,12792 L 3435,12601 L 3000,13313 L 2441,13199 L 1756,12989 L 1998,11330 L 1635,10500 L 1530,9283 L 1896,8292 L 2494,8059 L 3000,8248 L 3687,7183 L 4006,8489 L 4269,9448 L 4168,10500 Z" fill="#4B5320" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 3962,10500 L 4191,11487 L 3798,12096 L 3311,12002 L 3000,12783 L 2565,12598 L 2128,12244 L 2286,11092 L 1890,10500 L 1861,9556 L 2233,8966 L 2636,8743 L 3000,8638 L 3531,7938 L 3693,9114 L 3915,9742 L 3962,10500 Z" fill="#536221" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 3705,10500 L 3790,11154 L 3487,11474 L 3209,11509 L 3000,12149 L 2712,11891 L 2464,11573 L 2520,10898 L 2196,10500 L 2244,9874 L 2534,9567 L 2756,9321 L 3000,9132 L 3352,8800 L 3417,9666 L 3614,9991 L 3705,10500 Z" fill="#5B7122" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 3379,10500 L 3379,10814 L 3225,10949 L 3111,11036 L 3000,11378 L 2862,11164 L 2751,10999 L 2744,10712 L 2571,10500 L 2638,10200 L 2786,10072 L 2871,9879 L 3000,9762 L 3170,9681 L 3190,10121 L 3323,10233 L 3379,10500 Z" fill="#638022" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
 
-  <!-- Villages -->
-  <rect class="village" x="350" y="750" width="40" height="40" />
-  <rect class="village" x="380" y="720" width="30" height="30" />
-  
-  <rect class="village" x="1150" y="1150" width="50" height="30" />
-  <rect class="village" x="1100" y="1180" width="40" height="40" />
+    <path d="M 17503,10500 L 17385,12475 L 17151,14802 L 15718,13966 L 15000,15335 L 13921,15708 L 13100,14301 L 12882,12255 L 12998,10500 L 12071,8074 L 13265,7030 L 14092,6116 L 15000,6326 L 16122,5082 L 16986,6529 L 16807,9003 L 17503,10500 Z" fill="#2F4F4F" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 17325,10500 L 17102,12241 L 16716,13932 L 15591,13356 L 15000,15005 L 14051,15080 L 13499,13503 L 13242,11956 L 13104,10500 L 12432,8372 L 13640,7780 L 14246,6857 L 15000,6562 L 15986,5740 L 16574,7351 L 16491,9264 L 17325,10500 Z" fill="#3B4928" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 17095,10500 L 16727,11931 L 16319,13138 L 15503,12929 L 15000,14568 L 14220,14268 L 13860,12780 L 13511,11734 L 13263,10500 L 12884,8747 L 13978,8456 L 14361,7416 L 15000,6904 L 15811,6582 L 16201,8098 L 16267,9450 L 17095,10500 Z" fill="#445124" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 16776,10500 L 16309,11584 L 15985,12469 L 15432,12588 L 15000,13954 L 14406,13369 L 14159,12183 L 13736,11547 L 13510,10500 L 13380,9158 L 14253,9006 L 14459,7887 L 15000,7423 L 15619,7511 L 15890,8720 L 16087,9600 L 16776,10500 Z" fill="#4B5320" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 16369,10500 L 15901,11246 L 15712,11924 L 15358,12228 L 15000,13166 L 14588,12489 L 14395,11709 L 13971,11353 L 13845,10500 L 13866,9561 L 14466,9432 L 14561,8378 L 15000,8118 L 15431,8421 L 15641,9218 L 15896,9758 L 16369,10500 Z" fill="#536221" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 15907,10500 L 15542,10949 L 15479,11458 L 15263,11769 L 15000,12265 L 14750,11709 L 14593,11315 L 14255,11117 L 14236,10500 L 14303,9922 L 14640,9780 L 14683,8968 L 15000,8924 L 15263,9231 L 15432,9637 L 15656,9957 L 15907,10500 Z" fill="#5B7122" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 15436,10500 L 15247,10704 L 15252,11004 L 15142,11183 L 15000,11347 L 14885,11056 L 14784,10933 L 14603,10829 L 14636,10500 L 14676,10231 L 14807,10115 L 14831,9686 L 15000,9748 L 15121,9914 L 15228,10043 L 15352,10208 L 15436,10500 Z" fill="#638022" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
 
-  <rect class="village" x="1500" y="200" width="60" height="40" />
+    <path d="M 8492,16500 L 7954,17524 L 7056,18410 L 5188,18292 L 4000,19003 L 2121,19336 L 1424,18110 L 557,17391 L 468,16500 L -767,15266 L 1416,14885 L 2677,14504 L 4000,13987 L 5733,13885 L 7064,14585 L 6618,15822 L 8492,16500 Z" fill="#2F4F4F" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 8030,16500 L 7223,17334 L 6344,17965 L 5020,18039 L 4000,18764 L 2464,18818 L 2056,17715 L 1059,17261 L 770,16500 L 99,15490 L 2049,15281 L 2868,14792 L 4000,14227 L 5414,14366 L 6351,15031 L 6254,15916 L 8030,16500 Z" fill="#3B4928" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 7395,16500 L 6426,17128 L 5754,17596 L 4879,17826 L 4000,18418 L 2834,18259 L 2566,17396 L 1495,17149 L 1245,16500 L 1032,15732 L 2560,15600 L 3031,15038 L 4000,14575 L 5068,14888 L 5760,15400 L 5955,15994 L 7395,16500 Z" fill="#445124" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 6599,16500 L 5662,16930 L 5278,17299 L 4724,17593 L 4000,17972 L 3191,17721 L 2962,17149 L 1964,17027 L 1880,16500 L 1931,15964 L 2958,15849 L 3208,15305 L 4000,15023 L 4736,15389 L 5282,15699 L 5624,16080 L 6599,16500 Z" fill="#4B5320" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 5710,16500 L 5001,16759 L 4868,17043 L 4527,17296 L 4000,17467 L 3505,17247 L 3292,16943 L 2535,16879 L 2610,16500 L 2728,16171 L 3289,16056 L 3428,15636 L 4000,15530 L 4446,15827 L 4871,15956 L 5190,16192 L 5710,16500 Z" fill="#536221" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 4817,16500 L 4458,16619 L 4461,16788 L 4281,16924 L 4000,16960 L 3770,16847 L 3619,16738 L 3225,16701 L 3343,16500 L 3406,16346 L 3618,16261 L 3696,16042 L 4000,16039 L 4206,16190 L 4462,16211 L 4637,16335 L 4817,16500 Z" fill="#5B7122" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
 
-  <!-- Bridge (Choke point) -->
-  <rect class="bg" x="380" y="380" width="40" height="40" fill="#E6EDF3" />
-  <text x="430" y="400" class="label">Bridge Alpha (Choke)</text>
+    <path d="M 19697,16500 L 18853,17498 L 17069,17793 L 16716,19089 L 15000,19150 L 13316,19041 L 12909,17807 L 11123,17504 L 10259,16500 L 11523,15600 L 12429,14893 L 13629,14432 L 15000,13251 L 16352,14460 L 17549,14907 L 18575,15574 L 19697,16500 Z" fill="#2F4F4F" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 18828,16500 L 17949,17263 L 16785,17616 L 16539,18822 L 15000,18654 L 13705,18454 L 13196,17627 L 11507,17404 L 11136,16500 L 12365,15818 L 12797,15123 L 13749,14613 L 15000,13846 L 16018,14964 L 17185,15134 L 18242,15661 L 18828,16500 Z" fill="#3B4928" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 17892,16500 L 17205,17071 L 16548,17468 L 16295,18453 L 15000,18117 L 14028,17967 L 13437,17477 L 12052,17263 L 12078,16500 L 13046,15994 L 13117,15323 L 13936,14894 L 15000,14483 L 15751,15367 L 16868,15332 L 17747,15789 L 17892,16500 Z" fill="#445124" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 16998,16500 L 16609,16917 L 16283,17302 L 15989,17993 L 15000,17606 L 14289,17572 L 13706,17308 L 12744,17084 L 12980,16500 L 13579,16132 L 13467,15542 L 14183,15268 L 15000,15095 L 15544,15678 L 16522,15549 L 17105,15955 L 16998,16500 Z" fill="#4B5320" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 16216,16500 L 16097,16784 L 15937,17086 L 15649,17480 L 15000,17165 L 14516,17230 L 14056,17090 L 13521,16883 L 13769,16500 L 14028,16248 L 13896,15810 L 14466,15694 L 15000,15635 L 15373,15937 L 16097,15815 L 16379,16143 L 16216,16500 Z" fill="#536221" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 15564,16500 L 15585,16651 L 15500,16812 L 15310,16967 L 15000,16805 L 14743,16888 L 14496,16815 L 14297,16682 L 14429,16500 L 14478,16365 L 14417,16135 L 14748,16120 L 15000,16095 L 15202,16196 L 15580,16138 L 15653,16331 L 15564,16500 Z" fill="#5B7122" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
 
-  <!-- Labels -->
-  <text x="1200" y="1050" class="label">Silent Ridge</text>
-  <text x="800" y="1500" class="label">Iron Pass</text>
-  <text x="1550" y="180" class="label">Glass Harbour</text>
-  <text x="320" y="700" class="label">Village Rudra</text>
+    <path d="M 13912,17500 L 13171,18268 L 11322,18532 L 11087,19740 L 9000,19603 L 7317,19306 L 6398,18656 L 4530,18323 L 3527,17500 L 5634,16880 L 5937,16138 L 7321,15699 L 9000,14987 L 10439,15956 L 11783,16263 L 13622,16649 L 13912,17500 Z" fill="#2F4F4F" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 12855,17500 L 12260,18100 L 11103,18435 L 10829,19462 L 9000,19146 L 7687,18909 L 6663,18539 L 5059,18225 L 4678,17500 L 6411,17023 L 6278,16290 L 7512,15903 L 9000,15512 L 10110,16309 L 11488,16394 L 13068,16751 L 12855,17500 Z" fill="#3B4928" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 11826,17500 L 11541,17968 L 10865,18329 L 10491,19100 L 9000,18703 L 7977,18598 L 6948,18412 L 5780,18093 L 5800,17500 L 6995,17131 L 6641,16451 L 7782,16193 L 9000,16024 L 9860,16577 L 11172,16535 L 12321,16889 L 11826,17500 Z" fill="#445124" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 10924,17500 L 10947,17858 L 10537,18183 L 10101,18681 L 9000,18315 L 8216,18342 L 7323,18245 L 6627,17937 L 6795,17500 L 7455,17216 L 7093,16652 L 8103,16538 L 9000,16480 L 9662,16789 L 10767,16715 L 11450,17049 L 10924,17500 Z" fill="#4B5320" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 10183,17500 L 10380,17754 L 10095,17987 L 9700,18251 L 9000,17999 L 8443,18097 L 7811,18028 L 7500,17776 L 7630,17500 L 7888,17295 L 7658,16903 L 8436,16895 L 9000,16864 L 9475,16990 L 10249,16945 L 10551,17214 L 10183,17500 Z" fill="#536221" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 9569,17500 L 9748,17638 L 9564,17750 L 9326,17850 L 9000,17739 L 8698,17825 L 8390,17771 L 8308,17627 L 8338,17500 L 8386,17387 L 8313,17195 L 8742,17223 L 9000,17192 L 9262,17219 L 9640,17215 L 9718,17368 L 9569,17500 Z" fill="#5B7122" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+
+    <path d="M 7521,13000 L 7428,13799 L 7027,14299 L 6869,15540 L 6200,15242 L 5760,14669 L 5214,14549 L 4803,13909 L 4560,13000 L 5282,12403 L 5160,11366 L 5615,10781 L 6200,10589 L 6649,11298 L 7080,11617 L 7831,11938 L 7521,13000 Z" fill="#2F4F4F" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 7157,13000 L 7175,13635 L 6932,14150 L 6738,15043 L 6200,14637 L 5851,14325 L 5341,14350 L 5075,13732 L 4988,13000 L 5473,12526 L 5298,11583 L 5729,11214 L 6200,11228 L 6556,11649 L 6975,11783 L 7512,12146 L 7157,13000 Z" fill="#3B4928" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 6850,13000 L 6960,13495 L 6797,13938 L 6592,14487 L 6200,14121 L 5926,14038 L 5508,14088 L 5385,13530 L 5359,13000 L 5626,12626 L 5475,11861 L 5859,11705 L 6200,11778 L 6479,11942 L 6829,12011 L 7155,12378 L 6850,13000 Z" fill="#445124" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 6603,13000 L 6743,13354 L 6619,13659 L 6446,13934 L 6200,13700 L 6002,13750 L 5717,13759 L 5694,13330 L 5669,13000 L 5780,12727 L 5696,12208 L 5988,12195 L 6200,12232 L 6401,12237 L 6641,12308 L 6800,12609 L 6603,13000 Z" fill="#4B5320" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 6398,13000 L 6495,13192 L 6412,13333 L 6314,13431 L 6200,13344 L 6092,13411 L 5956,13383 L 5970,13150 L 5938,13000 L 5967,12849 L 5945,12600 L 6103,12633 L 6200,12622 L 6310,12583 L 6423,12650 L 6477,12820 L 6398,13000 Z" fill="#536221" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+
+    <path d="M 12816,8500 L 12858,9203 L 12652,9940 L 12216,10661 L 11500,10456 L 11041,9884 L 10169,10163 L 9952,9302 L 9827,8500 L 10397,7929 L 10240,6925 L 10786,6347 L 11500,6720 L 12061,6808 L 12582,7148 L 13403,7515 L 12816,8500 Z" fill="#2F4F4F" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 12460,8500 L 12648,9095 L 12487,9734 L 12047,10152 L 11500,9949 L 11107,9684 L 10370,9912 L 10323,9109 L 10254,8500 L 10556,8011 L 10427,7158 L 10955,6854 L 11500,7191 L 11974,7069 L 12431,7337 L 12961,7744 L 12460,8500 Z" fill="#3B4928" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 12183,8500 L 12432,8983 L 12266,9458 L 11881,9650 L 11500,9541 L 11176,9477 L 10627,9592 L 10688,8920 L 10602,8500 L 10721,8096 L 10669,7461 L 11121,7355 L 11500,7565 L 11885,7338 L 12224,7595 L 12524,7970 L 12183,8500 Z" fill="#445124" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+<path d="M 11959,8500 L 12174,8849 L 12009,9136 L 11732,9201 L 11500,9198 L 11262,9217 L 10920,9225 L 11012,8753 L 10898,8500 L 10928,8204 L 10948,7810 L 11269,7802 L 11500,7873 L 11779,7659 L 11980,7899 L 12130,8174 L 11959,8500 Z" fill="#4B5320" fill-opacity="0.88" stroke="#A9A9A9" stroke-width="25" stroke-opacity="0.6" />
+<path d="M 11744,8500 L 11860,8686 L 11744,8805 L 11607,8822 L 11500,8868 L 11372,8887 L 11221,8849 L 11278,8615 L 11184,8500 L 11192,8340 L 11235,8168 L 11394,8179 L 11500,8168 L 11649,8052 L 11730,8213 L 11793,8348 L 11744,8500 Z" fill="#536221" fill-opacity="0.88" stroke="#B0C4DE" stroke-width="50" stroke-opacity="0.6" />
+
+  </g>
+
+  <!-- Watercourses / Mountain Streams (#2F4F4F) -->
+  <g id="streams">
+    <path class="river" d="M 1000,8500 C 3500,9000 6000,10200 8000,11200 C 10500,12500 14000,13800 19000,14500" />
+  </g>
+
+  <!-- Tactical Grid Lines (#3C3C3D) & Edge Coordinates (#A9A9A9) -->
+  <g id="grid">
+    <line x1="2000" y1="500" x2="2000" y2="19500" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+<line x1="500" y1="18000" x2="19500" y2="18000" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+<line x1="4000" y1="500" x2="4000" y2="19500" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+<line x1="500" y1="16000" x2="19500" y2="16000" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+<line x1="6000" y1="500" x2="6000" y2="19500" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+<line x1="500" y1="14000" x2="19500" y2="14000" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+<line x1="8000" y1="500" x2="8000" y2="19500" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+<line x1="500" y1="12000" x2="19500" y2="12000" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+<line x1="10000" y1="500" x2="10000" y2="19500" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+<line x1="500" y1="10000" x2="19500" y2="10000" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+<line x1="12000" y1="500" x2="12000" y2="19500" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+<line x1="500" y1="8000" x2="19500" y2="8000" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+<line x1="14000" y1="500" x2="14000" y2="19500" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+<line x1="500" y1="6000" x2="19500" y2="6000" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+<line x1="16000" y1="500" x2="16000" y2="19500" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+<line x1="500" y1="4000" x2="19500" y2="4000" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+<line x1="18000" y1="500" x2="18000" y2="19500" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+<line x1="500" y1="2000" x2="19500" y2="2000" stroke="#3C3C3D" stroke-width="25" stroke-dasharray="100 100" opacity="0.6" />
+
+    <text x="2000" y="400" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">2000</text>
+<text x="2000" y="19900" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">2000</text>
+<text x="450" y="18100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="end">2000</text>
+<text x="19550" y="18100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="start">2000</text>
+<text x="4000" y="400" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">4000</text>
+<text x="4000" y="19900" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">4000</text>
+<text x="450" y="16100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="end">4000</text>
+<text x="19550" y="16100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="start">4000</text>
+<text x="6000" y="400" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">6000</text>
+<text x="6000" y="19900" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">6000</text>
+<text x="450" y="14100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="end">6000</text>
+<text x="19550" y="14100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="start">6000</text>
+<text x="8000" y="400" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">8000</text>
+<text x="8000" y="19900" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">8000</text>
+<text x="450" y="12100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="end">8000</text>
+<text x="19550" y="12100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="start">8000</text>
+<text x="10000" y="400" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">10000</text>
+<text x="10000" y="19900" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">10000</text>
+<text x="450" y="10100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="end">10000</text>
+<text x="19550" y="10100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="start">10000</text>
+<text x="12000" y="400" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">12000</text>
+<text x="12000" y="19900" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">12000</text>
+<text x="450" y="8100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="end">12000</text>
+<text x="19550" y="8100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="start">12000</text>
+<text x="14000" y="400" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">14000</text>
+<text x="14000" y="19900" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">14000</text>
+<text x="450" y="6100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="end">14000</text>
+<text x="19550" y="6100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="start">14000</text>
+<text x="16000" y="400" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">16000</text>
+<text x="16000" y="19900" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">16000</text>
+<text x="450" y="4100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="end">16000</text>
+<text x="19550" y="4100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="start">16000</text>
+<text x="18000" y="400" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">18000</text>
+<text x="18000" y="19900" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="middle">18000</text>
+<text x="450" y="2100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="end">18000</text>
+<text x="19550" y="2100" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="340" font-weight="bold" text-anchor="start">18000</text>
+
+  </g>
+
+  <!-- Tactical Mountain Roads (#8B4513) & Routes (#FFD700) -->
+  <g id="tactical-routes">
+    <path class="route-casing" d="M 8000,13000 L 8000,12000 L 8200,11500 L 8500,11000 L 9000,10000 L 9500,9000 L 10000,8000" />
+    <path class="route-main" d="M 8000,13000 L 8000,12000 L 8200,11500 L 8500,11000 L 9000,10000 L 9500,9000 L 10000,8000" />
+    
+    <path class="route-sec" d="M 7500,11800 L 8200,11500" />
+    <path class="route-sec" d="M 7000,14000 L 8000,13000" />
+  </g>
+
+  <!-- KAILASH RIDGE TRAINING SECTOR BOUNDARY (#FFD700) -->
+  <g id="training-sector">
+    <polygon class="sector-poly" points="5500,6800 12500,6800 12500,14800 5500,14800" />
+    
+    <!-- Corner L-Brackets (#FFD700) -->
+    <g stroke="#FFD700" stroke-width="30" fill="none">
+      <path d="M 5300,6800 L 5500,6800 L 5500,7000" />
+      <path d="M 12700,6800 L 12500,6800 L 12500,7000" />
+      <path d="M 12700,14800 L 12500,14800 L 12500,14600" />
+      <path d="M 5300,14800 L 5500,14800 L 5500,14600" />
+    </g>
+  </g>
+
+  <!-- MILITARY COMPASS ROSE (Top Right: #FFD700 / #A9A9A9 / #000000 / #4B5320) -->
+  <g id="compass" transform="translate(16500, 3500)">
+    <circle cx="0" cy="0" r="950" class="panel-bg" />
+    <circle cx="0" cy="0" r="880" fill="none" stroke="#FFD700" stroke-width="12" stroke-dasharray="24 12" />
+    
+    <!-- North Arrow Pointer -->
+    <polygon points="0,-800 140,0 0,-160" fill="#FFD700" />
+    <polygon points="0,-800 -140,0 0,-160" fill="#8B4513" />
+    <polygon points="0,800 100,0 0,100" fill="#4B5320" />
+    <polygon points="0,800 -100,0 0,100" fill="#3C3C3D" />
+    
+    <text x="0" y="-840" fill="#FFD700" font-family="'Black Ops One', monospace" font-size="320" text-anchor="middle" font-weight="900">N</text>
+    <text x="920" y="90" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="240" text-anchor="start" font-weight="bold">E</text>
+    <text x="-920" y="90" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="240" text-anchor="end" font-weight="bold">W</text>
+    <text x="0" y="980" fill="#A9A9A9" font-family="'JetBrains Mono', monospace" font-size="240" text-anchor="middle" font-weight="bold">S</text>
+  </g>
+
+  <!-- REAL-WORLD REFERENCE BOX (Bottom Left: bg #000000, border #8B4513, heading #FFD700, text #B0C4DE) -->
+  <g id="reference-box" transform="translate(1200, 16400)">
+    <rect width="6000" height="2400" rx="24" class="panel-ref" />
+    <rect x="25" y="25" width="5950" height="2350" rx="16" fill="none" stroke="#4B5320" stroke-width="10" />
+    
+    <text x="250" y="320" fill="#FFD700" font-family="'JetBrains Mono', monospace" font-size="250" font-weight="bold" letter-spacing="6">REAL-WORLD REFERENCE</text>
+    <text x="250" y="640" class="text-steel">WELLINGTON / NILGIRIS</text>
+    <text x="250" y="900" class="text-body">Tamil Nadu, India [11.3695° N, 76.7906° E]</text>
+    
+    <line x1="250" y1="1050" x2="5750" y2="1050" stroke="#4B5320" stroke-width="8" />
+    
+    <text x="250" y="1300" fill="#FFD700" font-family="'JetBrains Mono', monospace" font-size="250" font-weight="bold" letter-spacing="6">FICTIONAL SCENARIO</text>
+    <text x="250" y="1620" fill="#B0C4DE" font-family="'JetBrains Mono', monospace" font-size="300" font-weight="bold">KAILASH RIDGE TRAINING SECTOR</text>
+    <text x="250" y="1920" class="text-gold">★ FOR TRAINING / SIMULATION ONLY ★</text>
+    <text x="250" y="2180" class="text-body">Fictional scenario area. Not an actual DSSC military facility.</text>
+  </g>
+
+  <!-- MAP LEGEND BOX (Bottom Right: bg #000000, border #4B5320, title #FFD700, text #B0C4DE) -->
+  <g id="legend-box" transform="translate(12800, 16400)">
+    <rect width="6000" height="2400" rx="24" class="panel-bg" />
+    <rect x="25" y="25" width="5950" height="2350" rx="16" fill="none" stroke="#FFD700" stroke-width="10" stroke-dasharray="24 12" />
+    
+    <text x="250" y="320" fill="#FFD700" font-family="'Black Ops One', 'JetBrains Mono', monospace" font-size="320" font-weight="900" letter-spacing="8">MAP LEGEND</text>
+    <line x1="250" y1="420" x2="5750" y2="420" stroke="#4B5320" stroke-width="8" />
+    
+    <!-- Legend Items -->
+    <!-- Checkpoint: Gold #FFD700 -->
+    <polygon points="450,620 540,530 630,620 540,710" fill="#3C3C3D" stroke="#FFD700" stroke-width="20" />
+    <text x="800" y="650" fill="#B0C4DE" font-family="'JetBrains Mono', monospace" font-size="240" font-weight="bold">CHECKPOINT (CONTROL POINT)</text>
+
+    <!-- HQ / Building: #4B5320 / #FFD700 -->
+    <rect x="460" y="850" width="150" height="150" fill="#4B5320" stroke="#FFD700" stroke-width="20" />
+    <text x="800" y="960" fill="#B0C4DE" font-family="'JetBrains Mono', monospace" font-size="240" font-weight="bold">HQ / TACTICAL BUILDING</text>
+
+    <!-- Observation Point: #B0C4DE + #FFD700 -->
+    <circle cx="535" cy="1260" r="70" fill="#000000" stroke="#B0C4DE" stroke-width="20" />
+    <text x="800" y="1290" fill="#B0C4DE" font-family="'JetBrains Mono', monospace" font-size="240" font-weight="bold">OBSERVATION POINT</text>
+
+    <!-- Commander: #6B8E23 -->
+    <circle cx="535" cy="1580" r="65" fill="#6B8E23" stroke="#B0C4DE" stroke-width="20" />
+    <text x="800" y="1610" fill="#B0C4DE" font-family="'JetBrains Mono', monospace" font-size="240" font-weight="bold">COMMANDER / OFFICER ASSET</text>
+
+    <!-- Tactical Route: #FFD700 -->
+    <line x1="420" y1="1900" x2="650" y2="1900" stroke="#FFD700" stroke-width="40" stroke-dasharray="50 25" />
+    <text x="800" y="1930" fill="#B0C4DE" font-family="'JetBrains Mono', monospace" font-size="240" font-weight="bold">TACTICAL MOUNTAIN ROUTE</text>
+
+    <!-- Sector Boundary: #FFD700 -->
+    <line x1="420" y1="2200" x2="650" y2="2200" stroke="#FFD700" stroke-width="30" stroke-dasharray="40 20" />
+    <text x="800" y="2230" fill="#B0C4DE" font-family="'JetBrains Mono', monospace" font-size="240" font-weight="bold">SECTOR BOUNDARY</text>
+  </g>
 
 </svg>

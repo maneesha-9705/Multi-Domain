@@ -10,8 +10,21 @@ export type DegradationEffect = {
   active: boolean;
 };
 
+export type ChannelState = {
+  channel: string;
+  status: 'AVAILABLE' | 'DEGRADED' | 'UNAVAILABLE';
+  delaySeconds: number;
+  dropoutRate: number;
+};
+
 export class DegradationPipeline {
   private activeEffects: DegradationEffect[] = [];
+  private channels: Record<string, ChannelState> = {
+    VHF: { channel: 'VHF', status: 'AVAILABLE', delaySeconds: 0, dropoutRate: 0 },
+    UHF: { channel: 'UHF', status: 'AVAILABLE', delaySeconds: 0, dropoutRate: 0 },
+    SATCOM: { channel: 'SATCOM', status: 'AVAILABLE', delaySeconds: 0, dropoutRate: 0 },
+    DATALINK: { channel: 'DATALINK', status: 'AVAILABLE', delaySeconds: 0, dropoutRate: 0 },
+  };
   
   // Track last known good states for 'STALE' effect
   private lastKnownStates: Record<Role, Record<string, UnitState & { age: number }>> = {
@@ -23,6 +36,59 @@ export class DegradationPipeline {
     TRAINEE_EW_OFFICER: {},
     TRAINEE_CYBER_OFFICER: {}
   };
+
+  public setChannelState(channel: string, status: 'AVAILABLE' | 'DEGRADED' | 'UNAVAILABLE', delaySeconds: number = 10) {
+    if (!this.channels[channel]) {
+      this.channels[channel] = { channel, status: 'AVAILABLE', delaySeconds: 0, dropoutRate: 0 };
+    }
+    const c = this.channels[channel];
+    c.status = status;
+    if (status === 'AVAILABLE') {
+      c.delaySeconds = 0;
+      c.dropoutRate = 0;
+    } else if (status === 'DEGRADED') {
+      c.delaySeconds = delaySeconds;
+      c.dropoutRate = 20;
+    } else if (status === 'UNAVAILABLE') {
+      c.delaySeconds = 0;
+      c.dropoutRate = 100;
+    }
+  }
+
+  public getChannelState(channel: string): ChannelState {
+    return this.channels[channel] || { channel, status: 'AVAILABLE', delaySeconds: 0, dropoutRate: 0 };
+  }
+
+  public getAllChannels(): Record<string, ChannelState> {
+    return this.channels;
+  }
+
+  public processOutgoingMessage(message: any, channel: string = 'VHF') {
+    const chState = this.getChannelState(channel);
+    if (chState.status === 'UNAVAILABLE') {
+      return { status: 'DROPOUT' as const, reason: 'Total channel blackout / signal loss' };
+    }
+    if (chState.status === 'DEGRADED') {
+      return {
+        status: 'DELAYED' as const,
+        delaySeconds: chState.delaySeconds || 10,
+        message: {
+          ...message,
+          channel,
+          degradationTag: `DELAYED BY ${chState.delaySeconds || 10}S`,
+          originalSimTime: message.simTime
+        }
+      };
+    }
+    return {
+      status: 'DELIVERED' as const,
+      message: {
+        ...message,
+        channel,
+        degradationTag: 'CLEAN'
+      }
+    };
+  }
 
   public addEffect(effect: DegradationEffect) {
     this.activeEffects.push(effect);
@@ -43,25 +109,12 @@ export class DegradationPipeline {
 
     // Deep copy truth to mutate into perceived
     const perceivedUnits: Record<string, UnitState & { perceivedStatus?: string; age?: number }> = {};
-    const commsQuality: Record<string, number> = {
-      VHF: 100, UHF: 100, SATCOM: 100, DATALINK: 100
-    };
-
-    // Apply effects to comms quality
-    this.activeEffects.forEach(effect => {
-      if ((!effect.targetRole || effect.targetRole === role) && effect.targetChannel) {
-        if (effect.type === 'DROPOUT') {
-          commsQuality[effect.targetChannel] = Math.max(0, 100 - effect.intensity);
-        } else if (effect.type === 'DELAY') {
-          commsQuality[effect.targetChannel] = Math.max(0, 100 - (effect.intensity / 2));
-        }
-      }
+    const commsQuality: Record<string, number> = {};
+    Object.entries(this.channels).forEach(([ch, s]) => {
+      commsQuality[ch] = s.status === 'AVAILABLE' ? 100 : (s.status === 'DEGRADED' ? 50 : 0);
     });
 
     Object.values(truth.units).forEach(unit => {
-      // Basic visibility logic: Red units are only visible if they are within a certain condition
-      // For this demo, let's assume all units are transmitted via a data link that can be degraded.
-      
       let isVisible = true;
       let unitState = { ...unit } as any;
 
@@ -75,17 +128,14 @@ export class DegradationPipeline {
 
       if (isVisible) {
         if (corruptionEffect && Math.random() * 100 < corruptionEffect.intensity) {
-          // Corrupt position slightly
           unitState.position.lat += (Math.random() - 0.5) * 0.01;
           unitState.position.lng += (Math.random() - 0.5) * 0.01;
           unitState.perceivedStatus = 'CORRUPTED';
         }
 
-        // Update last known state
         this.lastKnownStates[role][unit.id] = { ...unitState, age: 0 };
         perceivedUnits[unit.id] = unitState;
       } else if (staleEffect) {
-        // Fall back to last known state
         const lastKnown = this.lastKnownStates[role][unit.id];
         if (lastKnown) {
           lastKnown.age += 1;
@@ -94,7 +144,6 @@ export class DegradationPipeline {
       }
     });
 
-    // Handle spoofing (fake units)
     const spoofEffects = this.activeEffects.filter(e => e.type === 'SPOOF' && (!e.targetRole || e.targetRole === role));
     spoofEffects.forEach((spoof, idx) => {
        perceivedUnits[`spoof-${idx}`] = {
@@ -113,8 +162,7 @@ export class DegradationPipeline {
     });
 
     return {
-      simTime: truth.simTime,
-      exerciseId: truth.exerciseId,
+      ...truth,
       perceivedUnits,
       commsQuality
     };

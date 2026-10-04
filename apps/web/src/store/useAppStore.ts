@@ -14,6 +14,8 @@ interface AppState {
   buildings: Record<string, Building>;
   officers: Record<string, Officer>;
   
+  commsChannels: Record<string, { channel: string, status: 'AVAILABLE'|'DEGRADED'|'UNAVAILABLE', delaySeconds: number }>;
+  decisions: any[];
   truthState: GroundTruthState | null;
   activeEffects: any[];
   participants: Role[];
@@ -30,6 +32,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   exerciseId: null,
   perceivedUnits: {},
   commsQuality: {},
+  commsChannels: {},
+  decisions: [],
   messages: [],
   buildings: {},
   officers: {},
@@ -53,7 +57,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ 
         buildings: state.buildings,
         officers: state.officers,
-        truthState: state // unified state for now
+        truthState: state
       });
     });
 
@@ -63,6 +67,14 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     socket.on('effects:update', (effects) => {
       set({ activeEffects: effects });
+    });
+
+    socket.on('comms:update', (channels) => {
+      set({ commsChannels: channels });
+    });
+
+    socket.on('decisions:update', (decisions) => {
+      set({ decisions });
     });
 
     socket.on('participants:update', (participants) => {

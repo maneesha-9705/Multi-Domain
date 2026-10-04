@@ -9,6 +9,8 @@ export class SimulationEngine extends EventEmitter {
   private readonly TICK_RATE_MS = 1000;
   public logger: EventLogger;
 
+  private pendingMessages: Array<{ deliverAtSimTime: number; targetRole: any; payload: any; channel: string; delaySeconds: number }> = [];
+
   constructor(exerciseId: string, scenario: Scenario) {
     super();
     this.scenario = scenario;
@@ -29,6 +31,34 @@ export class SimulationEngine extends EventEmitter {
       isPaused: true,
       status: 'NOT_STARTED'
     };
+  }
+
+  public queueDelayedMessage(deliverAtSimTime: number, targetRole: any, payload: any, channel: string, delaySeconds: number) {
+    this.pendingMessages.push({ deliverAtSimTime, targetRole, payload, channel, delaySeconds });
+  }
+
+  public setChannelStatus(channel: string, status: 'AVAILABLE'|'DEGRADED'|'UNAVAILABLE', delaySeconds: number = 10) {
+    Object.values(this.state.officers).forEach(off => {
+      if (off.commsNetwork === channel || !off.commsNetwork) {
+        off.commsStatus = status;
+      }
+    });
+
+    const eventType = status === 'AVAILABLE' ? 'COMMUNICATION_RESTORED' : (status === 'DEGRADED' ? 'COMMUNICATION_DEGRADED' : 'COMMUNICATION_LOST');
+    const desc = status === 'AVAILABLE' 
+      ? `Channel ${channel} restored to normal parameter.` 
+      : (status === 'DEGRADED' ? `Channel ${channel} DEGRADED (${delaySeconds}s latency active).` : `Channel ${channel} BLACKOUT / SIGNAL LOSS.`);
+
+    this.logger.logEvent({
+      type: eventType,
+      timestamp: this.state.simTime,
+      channel,
+      status,
+      description: desc
+    });
+
+    this.emit('commsChanged', { channel, status, delaySeconds });
+    this.emit('tick', this.state);
   }
 
   public initFictionalEntities(buildings: Building[], officers: Officer[]) {
@@ -146,8 +176,24 @@ export class SimulationEngine extends EventEmitter {
     this.updateUnitPositions(deltaSimTime);
     this.updateOfficerPositions(deltaSimTime);
     this.checkInjects();
+    this.processPendingMessages();
 
     this.emit('tick', this.state);
+  }
+
+  private processPendingMessages() {
+    const ready = this.pendingMessages.filter(m => this.state.simTime >= m.deliverAtSimTime);
+    this.pendingMessages = this.pendingMessages.filter(m => this.state.simTime < m.deliverAtSimTime);
+
+    ready.forEach(item => {
+      this.logger.logEvent({
+        type: 'COMMUNICATION_DELIVERED_DELAYED',
+        timestamp: this.state.simTime,
+        channel: item.channel,
+        description: `[DELIVERED AFTER ${item.delaySeconds}s LATENCY] Order to ${item.targetRole}: "${item.payload.text}"`
+      });
+      this.emit('messageDelivered', { targetRole: item.targetRole, message: item.payload });
+    });
   }
 
   private updateUnitPositions(deltaSimTime: number) {
@@ -219,7 +265,7 @@ export class SimulationEngine extends EventEmitter {
     if (officer.currentBuildingId) {
       const currentBuilding = this.state.buildings[officer.currentBuildingId];
       if (currentBuilding) {
-        currentBuilding.officers = currentBuilding.officers.filter(id => id !== officerId);
+        currentBuilding.officers = currentBuilding.officers.filter((id: string) => id !== officerId);
       }
       this.logger.logEvent({
         type: 'OFFICER_LEFT_BUILDING',

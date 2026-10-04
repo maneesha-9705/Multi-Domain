@@ -30,30 +30,51 @@
   font-style: normal;
 }
 
+:root {
+  --color-black: #000000;
+  --color-charcoal: #3C3C3D;
+  --color-olive: #6B8E23;
+  --color-army: #4B5320;
+  --color-gray: #A9A9A9;
+  --color-steel: #B0C4DE;
+  --color-brown: #8B4513;
+  --color-slate: #2F4F4F;
+  --color-gold: #FFD700;
+}
+
 @layer base {
   body {
-    @apply bg-base text-text font-sans antialiased;
+    background-color: #000000;
+    color: #B0C4DE;
+    @apply font-sans antialiased;
   }
 }
 
 @layer components {
   /* Common military panel style */
   .mil-panel {
-    @apply bg-panel border border-border rounded-md shadow-inner relative;
+    background-color: #3C3C3D;
+    border-color: #4B5320;
+    @apply border rounded-md shadow-inner relative;
   }
   
   /* Dashed "stitched" inner border for cards */
   .mil-card {
-    @apply bg-card border border-border rounded-[6px] relative p-3;
+    background-color: #3C3C3D;
+    border-color: #4B5320;
+    @apply border rounded-[6px] relative p-3 transition-colors hover:border-[#6B8E23];
   }
   .mil-card::after {
     content: '';
-    @apply absolute inset-1 border border-dashed border-border/50 rounded-sm pointer-events-none;
+    border-color: rgba(75, 83, 32, 0.4);
+    @apply absolute inset-1 border border-dashed rounded-sm pointer-events-none;
   }
 
   /* Stencil stamps */
   .stamp {
-    @apply font-stencil text-stamp border-4 border-stamp px-2 py-1 uppercase tracking-wider transform -rotate-12 opacity-80 pointer-events-none absolute inline-block;
+    color: #8B4513;
+    border-color: #8B4513;
+    @apply font-stencil border-4 px-2 py-1 uppercase tracking-wider transform -rotate-12 opacity-90 pointer-events-none absolute inline-block;
   }
 }
 
@@ -66,3 +87,4 @@
 .tactical-popup .leaflet-popup-tip {
   display: none;
 }
+
