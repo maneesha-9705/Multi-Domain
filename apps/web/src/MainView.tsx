@@ -1,13 +1,46 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useAppStore } from './store/useAppStore';
 import { TacticalMap } from './features/map/TacticalMap';
+import { Officer, SimEvent } from '@echo-fog/shared';
 
 export const MainView: React.FC = () => {
   const { role, truthState, disconnect, exerciseId, participants, messages, buildings, officers } = useAppStore();
 
   const isInstructor = role === 'INSTRUCTOR';
-  const simTime = truthState?.simTime || 0; 
   const status = truthState?.status || 'NOT_STARTED';
+
+  // REPLAY STATE
+  const [isReplaying, setIsReplaying] = useState(false);
+  const [replayTime, setReplayTime] = useState(0);
+  const [replayData, setReplayData] = useState<{events: SimEvent[], maxTime: number} | null>(null);
+
+  useEffect(() => {
+    let interval: any;
+    if (isReplaying && replayData) {
+      interval = setInterval(() => {
+        setReplayTime(t => {
+          if (t >= replayData.maxTime) {
+            setIsReplaying(false);
+            return 0;
+          }
+          return t + 1; // 1x speed replay tick
+        });
+      }, 100); // speed up playback by 10x
+    }
+    return () => clearInterval(interval);
+  }, [isReplaying, replayData]);
+
+  const handleStartReplay = async () => {
+    try {
+      const res = await fetch(`http://localhost:3001/api/exercise/${exerciseId}/data`);
+      const data = await res.json();
+      setReplayData({ events: data.events, maxTime: truthState?.simTime || 0 });
+      setReplayTime(0);
+      setIsReplaying(true);
+    } catch (e) { console.error(e); }
+  };
+
+  const simTime = isReplaying ? replayTime : (truthState?.simTime || 0);
 
   const formatSimTime = (time: number) => {
     const h = Math.floor(time / 3600).toString().padStart(2, '0');
@@ -16,14 +49,63 @@ export const MainView: React.FC = () => {
     return `${h}${m}${s}Z`;
   };
 
+  const activeOfficers = useMemo(() => {
+    if (!isReplaying || !replayData) return officers;
+    
+    // Compute officer positions at replayTime based on events
+    const computedOfficers: Record<string, Officer> = JSON.parse(JSON.stringify(officers));
+    
+    // Replay events up to replayTime
+    const pastEvents = replayData.events.filter(e => e.timestamp <= replayTime);
+    
+    Object.values(computedOfficers).forEach(off => {
+      const myEvents = pastEvents.filter(e => e.officerId === off.id);
+      
+      const lastJoin = myEvents.slice().reverse().find(e => e.type === 'OFFICER_JOINED');
+      if (!lastJoin) {
+         off.status = 'INACTIVE';
+         return; // not yet joined
+      }
+      off.status = 'ACTIVE';
+
+      // Find the most recent comms event
+      const lastComms = myEvents.slice().reverse().find(e => e.type.startsWith('COMMUNICATION_'));
+      if (lastComms && 'status' in lastComms) {
+         off.commsStatus = (lastComms as any).status;
+      }
+
+      // Movement logic
+      const lastMoveStart = myEvents.slice().reverse().find(e => e.type === 'OFFICER_MOVED');
+      const lastMoveEnd = myEvents.slice().reverse().find(e => e.type === 'OFFICER_ENTERED_BUILDING');
+      
+      if (lastMoveStart && (!lastMoveEnd || lastMoveEnd.timestamp < lastMoveStart.timestamp)) {
+         // Currently in transit during this replay frame
+         off.currentBuildingId = null;
+         // In a real robust system we'd interpolate between start building and target building coordinates.
+         // Since we don't store target in the event easily right now, we'll just mark them IN_TRANSIT.
+      } else if (lastMoveEnd) {
+         off.currentBuildingId = lastMoveEnd.buildingId || null;
+         if (off.currentBuildingId && buildings[off.currentBuildingId]) {
+           off.position = { ...buildings[off.currentBuildingId].position };
+         }
+      } else if (lastJoin.buildingId && buildings[lastJoin.buildingId]) {
+         off.currentBuildingId = lastJoin.buildingId;
+         off.position = { ...buildings[lastJoin.buildingId].position };
+      }
+    });
+    
+    return computedOfficers;
+  }, [officers, buildings, isReplaying, replayTime, replayData]);
+
   const commsOverview = useMemo(() => {
     const nets: Record<string, 'AVAILABLE' | 'DEGRADED' | 'UNAVAILABLE'> = { VHF: 'AVAILABLE', UHF: 'AVAILABLE', SATCOM: 'AVAILABLE', DATALINK: 'AVAILABLE' };
-    Object.values(officers).forEach(o => {
+    Object.values(activeOfficers).forEach(o => {
+      if (o.status === 'INACTIVE') return;
       if (o.commsStatus === 'DEGRADED' && nets[o.commsNetwork] === 'AVAILABLE') nets[o.commsNetwork] = 'DEGRADED';
       if (o.commsStatus === 'UNAVAILABLE') nets[o.commsNetwork] = 'UNAVAILABLE';
     });
     return nets;
-  }, [officers]);
+  }, [activeOfficers]);
 
   return (
     <div className="h-screen w-screen flex flex-col bg-base text-text overflow-hidden font-sans">
@@ -81,9 +163,9 @@ export const MainView: React.FC = () => {
 
         {/* CENTER COLUMN: Tactical Map */}
         <main className="flex-1 relative bg-base flex flex-col p-2">
-          {isInstructor && <div className="stamp top-4 left-4 z-[1000] !border-instructor !text-instructor opacity-100">GROUND TRUTH</div>}
+          {isInstructor && <div className="stamp top-4 left-4 z-[1000] !border-instructor !text-instructor opacity-100">{isReplaying ? 'REPLAY MODE' : 'GROUND TRUTH'}</div>}
           <div className="stamp bottom-4 right-4 z-[1000] text-sm">FICTIONAL DATA</div>
-          <TacticalMap buildings={buildings} officers={officers} isGroundTruth={isInstructor} />
+          <TacticalMap buildings={buildings} officers={activeOfficers} isGroundTruth={isInstructor} />
         </main>
 
         {/* RIGHT COLUMN: Decision / Instructor */}
@@ -102,9 +184,15 @@ export const MainView: React.FC = () => {
                     <button onClick={() => useAppStore.getState().socket?.emit('instructor:control', { exerciseId, action: 'RESUME' })} className="bg-accent text-panel hover:bg-sand font-bold text-xs py-1 rounded uppercase">RESUME</button>
                     <button onClick={() => useAppStore.getState().socket?.emit('instructor:control', { exerciseId, action: 'END' })} className="bg-stamp text-white font-bold text-xs py-1 rounded">END OP</button>
                   </div>
-                  <div className="mt-2">
-                    <a href={`http://localhost:3001/api/exercise/${exerciseId}/report`} target="_blank" className="block text-center w-full bg-instructor text-black font-bold text-xs py-1 rounded uppercase">VIEW AAR REPORT</a>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <a href={`http://localhost:3001/api/exercise/${exerciseId}/report`} target="_blank" className="block text-center w-full bg-instructor text-black font-bold text-xs py-1 rounded uppercase">AAR REPORT</a>
+                    <button onClick={handleStartReplay} className="bg-unknown text-black font-bold text-xs py-1 rounded uppercase">{isReplaying ? 'REPLAYING...' : 'REPLAY'}</button>
                   </div>
+                  {isReplaying && (
+                    <div className="mt-2">
+                      <input type="range" min="0" max={replayData?.maxTime || 0} value={replayTime} onChange={e => setReplayTime(Number(e.target.value))} className="w-full" />
+                    </div>
+                  )}
                 </div>
 
                 <div className="mil-card">

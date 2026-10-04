@@ -43,6 +43,53 @@ export class SimulationEngine extends EventEmitter {
     });
   }
 
+  public spawnOfficer(role: string): Officer {
+    const officerId = `OFF-${role}`;
+    if (this.state.officers[officerId]) {
+      return this.state.officers[officerId];
+    }
+    
+    // Select a random valid position from the predefined buildings/spawn points
+    const buildingIds = Object.keys(this.state.buildings);
+    const randomBuildingId = buildingIds[Math.floor(Math.random() * buildingIds.length)];
+    const spawnBuilding = this.state.buildings[randomBuildingId];
+
+    // Add a small visual offset so they don't stack perfectly on top of each other
+    const offsetLat = (Math.random() - 0.5) * 100;
+    const offsetLng = (Math.random() - 0.5) * 100;
+
+    const nameParts = role.split('_');
+    const shortName = nameParts[nameParts.length - 1];
+
+    const officer: Officer = {
+      id: officerId,
+      name: `Officer ${shortName}`,
+      role: role.replace(/_/g, ' '),
+      currentBuildingId: spawnBuilding.id,
+      position: { lat: spawnBuilding.position.lat + offsetLat, lng: spawnBuilding.position.lng + offsetLng },
+      status: 'ACTIVE',
+      commsNetwork: 'VHF',
+      commsStatus: 'AVAILABLE',
+      lastUpdateTime: this.state.simTime,
+      waypoints: [],
+      targetBuildingId: null
+    };
+
+    this.state.officers[officer.id] = officer;
+    spawnBuilding.officers.push(officer.id);
+
+    this.logger.logEvent({
+      type: 'OFFICER_JOINED',
+      timestamp: this.state.simTime,
+      officerId: officer.id,
+      buildingId: spawnBuilding.id,
+      description: `${officer.name} joined operation at ${spawnBuilding.name}`
+    });
+
+    this.emit('tick', this.state); // force broadcast
+    return officer;
+  }
+
   public getState(): GroundTruthState {
     return this.state;
   }

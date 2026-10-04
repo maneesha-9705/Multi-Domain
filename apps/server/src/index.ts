@@ -34,6 +34,16 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', roles: RoleEnum.options });
 });
 
+app.get('/api/exercise/:id/data', (req, res) => {
+  const session = activeExercises.get(req.params.id);
+  if (!session) return res.status(404).json({ error: 'Exercise not found' });
+  res.json({
+    events: session.engine.logger.getEvents(),
+    buildings: session.engine.getState().buildings,
+    officers: session.engine.getState().officers
+  });
+});
+
 app.get('/api/exercise/:id/report', (req, res) => {
   const session = activeExercises.get(req.params.id);
   if (!session) return res.status(404).send('Exercise not found');
@@ -41,9 +51,40 @@ app.get('/api/exercise/:id/report', (req, res) => {
   const events = session.engine.logger.getEvents();
   const state = session.engine.getState();
   
-  const officerStats = Object.values(state.officers).map(o => {
-    const movements = events.filter(e => e.type === 'OFFICER_MOVED' && e.officerId === o.id).length;
-    return `<tr><td>${o.id}</td><td>${o.name}</td><td>${o.role}</td><td>${movements}</td></tr>`;
+  const officerReports = Object.values(state.officers).map(o => {
+    // Filter events for this officer
+    const officerEvents = events.filter(e => e.officerId === o.id);
+    const joinEvent = officerEvents.find(e => e.type === 'OFFICER_JOINED');
+    const moveEvents = officerEvents.filter(e => e.type === 'OFFICER_ENTERED_BUILDING');
+    const commEvents = officerEvents.filter(e => e.type.startsWith('COMMUNICATION_'));
+    
+    let initialPosition = 'Unknown';
+    if (joinEvent && joinEvent.buildingId) {
+      initialPosition = state.buildings[joinEvent.buildingId]?.name || joinEvent.buildingId;
+    }
+
+    const finalBuilding = o.currentBuildingId ? (state.buildings[o.currentBuildingId]?.name || 'Unknown') : 'In Transit';
+
+    const moveHistoryHtml = moveEvents.map(e => `<tr><td>${new Date(e.timestamp * 1000).toISOString().substr(11, 8)}</td><td>${state.buildings[e.buildingId!]?.name || 'Unknown'}</td></tr>`).join('');
+    const commHistoryHtml = commEvents.map(e => `<tr><td>${new Date(e.timestamp * 1000).toISOString().substr(11, 8)}</td><td>${e.channel} - ${e.status}</td></tr>`).join('');
+
+    return `
+      <div class="officer-card">
+        <h3>OFFICER ${o.id}</h3>
+        <table>
+          <tr><th>Name</th><td>${o.name}</td></tr>
+          <tr><th>Role</th><td>${o.role}</td></tr>
+          <tr><th>Initial Position</th><td>${initialPosition}</td></tr>
+          <tr><th>Final Position</th><td>${finalBuilding}</td></tr>
+        </table>
+        
+        <h4>Movement History:</h4>
+        ${moveEvents.length > 0 ? `<table><tr><th>Time (T+)</th><th>Location</th></tr>${moveHistoryHtml}</table>` : '<p>No movements.</p>'}
+        
+        <h4>Communication Events:</h4>
+        ${commEvents.length > 0 ? `<table><tr><th>Time (T+)</th><th>Status</th></tr>${commHistoryHtml}</table>` : '<p>No disruptions.</p>'}
+      </div>
+    `;
   }).join('');
 
   const timeline = events.map(e => {
@@ -61,10 +102,12 @@ app.get('/api/exercise/:id/report', (req, res) => {
         @media print { body { padding: 0; } }
         h1 { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; text-transform: uppercase; }
         h2 { border-bottom: 1px dashed #000; margin-top: 30px; text-transform: uppercase; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        h3 { border-bottom: 1px solid #aaa; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; }
         th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-        th { background: #eee; }
+        th { background: #eee; width: 30%; }
         .stamp { font-size: 24px; color: #d00; border: 3px solid #d00; padding: 10px; display: inline-block; transform: rotate(-5deg); position: absolute; top: 20px; right: 20px; text-transform: uppercase; }
+        .officer-card { border: 1px solid #000; padding: 15px; margin-bottom: 20px; }
       </style>
     </head>
     <body>
@@ -78,13 +121,10 @@ app.get('/api/exercise/:id/report', (req, res) => {
         <tr><th>Total Events</th><td>${events.length}</td></tr>
       </table>
 
-      <h2>Officer Activity</h2>
-      <table>
-        <tr><th>ID</th><th>Name</th><th>Role</th><th>Total Movements</th></tr>
-        ${officerStats}
-      </table>
+      <h2>Detailed Officer Activity</h2>
+      ${officerReports}
 
-      <h2>Chronological Timeline</h2>
+      <h2>Chronological Timeline (All Events)</h2>
       <table>
         <tr><th>Time (T+)</th><th>Event Type</th><th>Description</th></tr>
         ${timeline}
@@ -170,6 +210,9 @@ io.on('connection', (socket) => {
     } else {
       socket.join(`trainee_${exerciseId}_${role}`);
       io.to(`instructor_${exerciseId}`).emit('participants:update', Array.from(session.participants));
+      
+      // Spawn officer dynamically at random predefined position
+      session.engine.spawnOfficer(role);
     }
 
     socket.on('disconnect', () => {
